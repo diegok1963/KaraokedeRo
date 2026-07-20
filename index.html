@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KaraokeDeRo – Administrador de Reservas</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+    :root {
+      --bg: #0d0d1a;
+      --card: #16162a;
+      --card2: #1e1e38;
+      --accent: #c026d3;
+      --accent2: #7c3aed;
+      --gold: #f59e0b;
+      --text: #f1f0ff;
+      --muted: #9ca3af;
+      --border: #2e2e50;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --input-bg: #0d0d1a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, #1a0030 0%, #0d0d1a 60%, #1a001a 100%);
+      border-bottom: 2px solid var(--accent);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 30px rgba(192,38,211,0.25);
+    }
+    .logo-icon {
+      font-size: 2.2rem;
+      filter: drop-shadow(0 0 10px #c026d3);
+    }
+    .header-text h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #e879f9, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+    }
+    .header-text p {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .badge-total {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 28px 20px;
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .stat-card.s1::before { background: linear-gradient(90deg, #c026d3, #7c3aed); }
+    .stat-card.s2::before { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+    .stat-card.s3::before { background: linear-gradient(90deg, #22c55e, #06b6d4); }
+    .stat-card.s4::before { background: linear-gradient(90deg, #06b6d4, #7c3aed); }
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .s1 .stat-num { color: #e879f9; }
+    .s2 .stat-num { color: var(--gold); }
+    .s3 .stat-num { color: #4ade80; }
+    .s4 .stat-num { color: #22d3ee; }
+    .stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 220px;
+    }
+    .search-wrap input {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px 10px 40px;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap .ico {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 1rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all .2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(192,38,211,0.35);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(192,38,211,0.5); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: var(--danger);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.25); }
+    .btn-success {
+      background: rgba(34,197,94,0.15);
+      border: 1px solid rgba(34,197,94,0.4);
+      color: var(--success);
+    }
+    .btn-success:hover { background: rgba(34,197,94,0.25); }
+    .btn-excel {
+      background: rgba(34,197,94,0.15);
+      border: 1px solid rgba(34,197,94,0.5);
+      color: #4ade80;
+      font-weight: 600;
+    }
+    .btn-excel:hover { background: rgba(34,197,94,0.28); transform: translateY(-1px); }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead tr {
+      background: linear-gradient(90deg, #1a0030, #1e1e38);
+      border-bottom: 2px solid var(--accent);
+    }
+    th {
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    th:hover { color: var(--accent); }
+    th .sort-ico { margin-left: 4px; opacity: 0.4; }
+    th.sorted .sort-ico { opacity: 1; color: var(--accent); }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(192,38,211,0.06); }
+    tbody tr.selected { background: rgba(192,38,211,0.12); }
+
+    td {
+      padding: 13px 16px;
+      font-size: 0.88rem;
+      vertical-align: middle;
+    }
+    .td-fecha { color: var(--muted); font-size: 0.78rem; white-space: nowrap; }
+    .td-nombre { font-weight: 700; color: #e879f9; }
+    .td-tel { font-family: monospace; color: #a78bfa; }
+    .td-amigos { max-width: 280px; }
+    .amigo-chip {
+      display: inline-block;
+      background: rgba(124,58,237,0.2);
+      border: 1px solid rgba(124,58,237,0.4);
+      color: #c4b5fd;
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin: 2px 2px 2px 0;
+      white-space: nowrap;
+    }
+    .td-actions { white-space: nowrap; }
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      border-radius: 7px;
+      margin-right: 4px;
+    }
+    .empty-row td {
+      text-align: center;
+      padding: 48px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(192,38,211,0.15);
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .modal-header {
+      padding: 22px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-header h2 { font-size: 1.1rem; font-weight: 700; }
+    .modal-header .modal-icon { font-size: 1.4rem; }
+    .modal-close {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+      border-radius: 6px;
+      transition: color .2s;
+    }
+    .modal-close:hover { color: var(--danger); }
+    .modal-body { padding: 22px 24px; }
+    .modal-footer {
+      padding: 16px 24px 22px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── FORM FIELDS ── */
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 7px;
+    }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      font-family: inherit;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(192,38,211,0.15);
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-hint { font-size: 0.72rem; color: var(--muted); margin-top: 5px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* ── CONFIRM MODAL ── */
+    .confirm-modal .modal-body { text-align: center; padding: 30px 24px; }
+    .confirm-icon { font-size: 3rem; margin-bottom: 12px; }
+    .confirm-modal h3 { font-size: 1.1rem; margin-bottom: 8px; }
+    .confirm-modal p { color: var(--muted); font-size: 0.88rem; }
+
+    /* ── TOAST ── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      animation: toastIn .3s ease;
+      min-width: 260px;
+    }
+    @keyframes toastIn {
+      from { transform: translateX(40px); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+    .toast.success { border-left: 4px solid var(--success); }
+    .toast.error   { border-left: 4px solid var(--danger); }
+    .toast.info    { border-left: 4px solid var(--accent); }
+
+    /* ── PAGINATION ── */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .page-info { font-size: 0.82rem; color: var(--muted); }
+    .page-btns { display: flex; gap: 6px; }
+    .page-btn {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .page-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      header { padding: 14px 16px; }
+      .header-text h1 { font-size: 1.2rem; }
+      .form-row { grid-template-columns: 1fr; }
+      td, th { padding: 10px 10px; }
+      .td-amigos { display: none; }
+    }
+  </style>
+</head>
+<body>
+<!-- HEADER -->
+<header>
+<div class="logo-icon">🎤</div>
+<div class="header-text">
+<h1>KaraokeDeRo</h1>
+<p>Administrador de Reservas</p>
+</div>
+<div class="header-right">
+<span class="badge-total" id="badge-total">0 reservas</span>
+<button class="btn btn-primary" onclick="openModal()">＋ Nueva Reserva</button>
+</div>
+</header>
+<!-- MAIN -->
+<div class="container">
+<!-- STATS -->
+<div class="stats-bar">
+<div class="stat-card s1">
+<div class="stat-num" id="stat-total">0</div>
+<div class="stat-label">Total Reservas</div>
+</div>
+<div class="stat-card s2">
+<div class="stat-num" id="stat-hoy">0</div>
+<div class="stat-label">Hoy</div>
+</div>
+<div class="stat-card s3">
+<div class="stat-num" id="stat-amigos">0</div>
+<div class="stat-label">Total Asistentes</div>
+</div>
+<div class="stat-card s4">
+<div class="stat-num" id="stat-promedio">0</div>
+<div class="stat-label">Prom. Amigos/Reserva</div>
+</div>
+</div>
+<!-- TOOLBAR -->
+<div class="toolbar">
+<div class="search-wrap">
+<span class="ico">🔍</span>
+<input id="search-input" oninput="renderTable()" placeholder="Buscar por nombre, teléfono o amigos…" type="text"/>
+</div>
+<button class="btn btn-excel" onclick="exportExcel()">📊 Exportar Excel</button>
+<button class="btn btn-outline" onclick="clearSearch()">✕ Limpiar</button>
+</div>
+<!-- TABLE -->
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th id="th-fecha" onclick="sortBy('fecha')">Fecha / Hora <span class="sort-ico">↕</span></th>
+<th id="th-nombre" onclick="sortBy('nombre')">Nombre y Apellido <span class="sort-ico">↕</span></th>
+<th id="th-telefono" onclick="sortBy('telefono')">Teléfono <span class="sort-ico">↕</span></th>
+<th class="td-amigos">Amigos</th>
+<th>Acciones</th>
+</tr>
+</thead>
+<tbody id="table-body"></tbody>
+</table>
+</div>
+<!-- PAGINATION -->
+<div class="pagination">
+<div class="page-info" id="page-info"></div>
+<div class="page-btns" id="page-btns"></div>
+</div>
+</div>
+<!-- ── MODAL NUEVA / EDITAR RESERVA ── -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+<div class="modal">
+<div class="modal-header">
+<span class="modal-icon" id="modal-icon">🎤</span>
+<h2 id="modal-title">Nueva Reserva</h2>
+<button class="modal-close" onclick="closeModal()">✕</button>
+</div>
+<div class="modal-body">
+<div class="form-row">
+<div class="form-group">
+<label>Nombre y Apellido *</label>
+<input id="f-nombre" placeholder="Ej: María González" type="text"/>
+</div>
+<div class="form-group">
+<label>Teléfono de Contacto *</label>
+<input id="f-telefono" placeholder="Ej: 11 5555-5555" type="tel"/>
+</div>
+</div>
+<div class="form-group">
+<label>Fecha y Hora</label>
+<input id="f-fecha" type="datetime-local"/>
+</div>
+<div class="form-group">
+<label>Amigos (separados por coma)</label>
+<textarea id="f-amigos" placeholder="Ej: Juan García, Ana López, Pedro Ruiz"></textarea>
+<div class="form-hint">Ingresá los nombres separados por coma ","</div>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+<button class="btn btn-primary" onclick="saveReserva()">💾 Guardar</button>
+</div>
+</div>
+</div>
+<!-- ── MODAL CONFIRMAR ELIMINAR ── -->
+<div class="modal-overlay" id="confirm-overlay" onclick="closeConfirmOutside(event)">
+<div class="modal confirm-modal" style="max-width:400px">
+<div class="modal-header">
+<span class="modal-icon">⚠️</span>
+<h2>Confirmar eliminación</h2>
+<button class="modal-close" onclick="closeConfirm()">✕</button>
+</div>
+<div class="modal-body">
+<div class="confirm-icon">🗑️</div>
+<h3>¿Eliminar esta reserva?</h3>
+<p id="confirm-desc">Esta acción no se puede deshacer.</p>
+</div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeConfirm()">Cancelar</button>
+<button class="btn btn-danger" onclick="confirmDelete()">🗑 Eliminar</button>
+</div>
+</div>
+</div>
+<!-- ── MODAL VER DETALLE ── -->
+<div class="modal-overlay" id="detail-overlay" onclick="closeDetailOutside(event)">
+<div class="modal">
+<div class="modal-header">
+<span class="modal-icon">👤</span>
+<h2 id="detail-title">Detalle de Reserva</h2>
+<button class="modal-close" onclick="closeDetail()">✕</button>
+</div>
+<div class="modal-body" id="detail-body"></div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeDetail()">Cerrar</button>
+<button class="btn btn-primary" onclick="editFromDetail()">✏️ Editar</button>
+</div>
+</div>
+</div>
+<!-- TOAST -->
+<div id="toast-container"></div>
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+let reservas = [
+  {
+    id: 1,
+    fecha: "2026-07-18 23:52:12",
+    nombre: "AAAAA",
+    telefono: "88 8888-8888",
+    amigos: "JUAN GARCÍA, PABLO RAMIRES, PAOLA GONZÁLEZ, MIRTA PALACIOS"
+  },
+  {
+    id: 2,
+    fecha: "2026-07-19 00:05:02",
+    nombre: "bbbbbb",
+    telefono: "99999999999",
+    amigos: "Juan Garcia, Pablo Ramirez, Carlos Gonzalez, Claudia Medite"
+  }
+];
+
+let nextId = 3;
+let editingId = null;
+let deletingId = null;
+let detailId = null;
+let sortField = 'fecha';
+let sortDir = 'desc';
+let currentPage = 1;
+const PAGE_SIZE = 10;
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function updateStats() {
+  const total = reservas.length;
+  const hoy = new Date().toISOString().slice(0, 10);
+  const hoyCount = reservas.filter(r => r.fecha.startsWith(hoy)).length;
+
+  let totalAmigos = 0;
+  reservas.forEach(r => {
+    if (r.amigos && r.amigos.trim()) {
+      const arr = r.amigos.split(',').map(a => a.trim()).filter(Boolean);
+      totalAmigos += arr.length;
+    }
+  });
+  const promedio = total > 0 ? (totalAmigos / total).toFixed(1) : 0;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-hoy').textContent = hoyCount;
+  document.getElementById('stat-amigos').textContent = totalAmigos + total; // incluye titular
+  document.getElementById('stat-promedio').textContent = promedio;
+  document.getElementById('badge-total').textContent = total + (total === 1 ? ' reserva' : ' reservas');
+}
+
+// ── SORT ──────────────────────────────────────────────────────────────────────
+function sortBy(field) {
+  if (sortField === field) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  else { sortField = field; sortDir = 'asc'; }
+  currentPage = 1;
+  renderTable();
+}
+
+function getSorted(arr) {
+  return [...arr].sort((a, b) => {
+    let va = a[sortField] || '', vb = b[sortField] || '';
+    if (sortField === 'fecha') { va = new Date(va); vb = new Date(vb); }
+    else { va = va.toString().toLowerCase(); vb = vb.toString().toLowerCase(); }
+    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+// ── FILTER ────────────────────────────────────────────────────────────────────
+function getFiltered() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  if (!q) return reservas;
+  return reservas.filter(r =>
+    r.nombre.toLowerCase().includes(q) ||
+    r.telefono.toLowerCase().includes(q) ||
+    r.amigos.toLowerCase().includes(q) ||
+    r.fecha.includes(q)
+  );
+}
+
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  currentPage = 1;
+  renderTable();
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────────────────────
+function renderTable() {
+  const filtered = getSorted(getFiltered());
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page = filtered.slice(start, start + PAGE_SIZE);
+
+  const tbody = document.getElementById('table-body');
+
+  // Sort headers
+  ['fecha','nombre','telefono'].forEach(f => {
+    const th = document.getElementById('th-' + f);
+    if (!th) return;
+    th.classList.toggle('sorted', sortField === f);
+    const ico = th.querySelector('.sort-ico');
+    if (ico) ico.textContent = sortField === f ? (sortDir === 'asc' ? '↑' : '↓') : '↕';
+  });
+
+  if (page.length === 0) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">
+      <span class="empty-icon">🎵</span>
+      No se encontraron reservas
+    </td></tr>`;
+  } else {
+    tbody.innerHTML = page.map(r => {
+      const amigosArr = r.amigos ? r.amigos.split(',').map(a => a.trim()).filter(Boolean) : [];
+      const chips = amigosArr.map(a => `<span class="amigo-chip">${escHtml(a)}</span>`).join('');
+      const fechaFmt = formatFecha(r.fecha);
+      return `<tr>
+        <td class="td-fecha">${fechaFmt}</td>
+        <td class="td-nombre">${escHtml(r.nombre)}</td>
+        <td class="td-tel">${escHtml(r.telefono)}</td>
+        <td class="td-amigos">${chips || '<span style="color:var(--muted);font-size:.8rem">Sin amigos</span>'}</td>
+        <td class="td-actions">
+          <button class="btn btn-outline btn-sm" onclick="openDetail(${r.id})">👁</button>
+          <button class="btn btn-success btn-sm" onclick="openModal(${r.id})">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="openConfirm(${r.id})">🗑</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Pagination
+  document.getElementById('page-info').textContent =
+    total === 0 ? 'Sin resultados' :
+    `Mostrando ${start + 1}–${Math.min(start + PAGE_SIZE, total)} de ${total}`;
+
+  const pageBtns = document.getElementById('page-btns');
+  pageBtns.innerHTML = '';
+  const addBtn = (label, page, disabled, active) => {
+    const b = document.createElement('button');
+    b.className = 'page-btn' + (active ? ' active' : '');
+    b.textContent = label;
+    b.disabled = disabled;
+    b.onclick = () => { currentPage = page; renderTable(); };
+    pageBtns.appendChild(b);
+  };
+  addBtn('‹', currentPage - 1, currentPage === 1, false);
+  for (let i = 1; i <= totalPages; i++) {
+    if (totalPages <= 7 || Math.abs(i - currentPage) <= 2 || i === 1 || i === totalPages) {
+      addBtn(i, i, false, i === currentPage);
+    } else if (Math.abs(i - currentPage) === 3) {
+      const dots = document.createElement('span');
+      dots.textContent = '…';
+      dots.style.cssText = 'padding:0 6px;color:var(--muted);line-height:34px;';
+      pageBtns.appendChild(dots);
+    }
+  }
+  addBtn('›', currentPage + 1, currentPage === totalPages, false);
+
+  updateStats();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatFecha(f) {
+  if (!f) return '—';
+  const d = new Date(f.replace(' ', 'T'));
+  if (isNaN(d)) return f;
+  return d.toLocaleDateString('es-AR', {day:'2-digit',month:'2-digit',year:'numeric'}) +
+    ' ' + d.toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'});
+}
+function nowLocal() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// ── MODAL NUEVA / EDITAR ──────────────────────────────────────────────────────
+function openModal(id = null) {
+  editingId = id;
+  const overlay = document.getElementById('modal-overlay');
+  const title = document.getElementById('modal-title');
+  const icon = document.getElementById('modal-icon');
+
+  if (id) {
+    const r = reservas.find(x => x.id === id);
+    if (!r) return;
+    title.textContent = 'Editar Reserva';
+    icon.textContent = '✏️';
+    document.getElementById('f-nombre').value = r.nombre;
+    document.getElementById('f-telefono').value = r.telefono;
+    document.getElementById('f-amigos').value = r.amigos;
+    const fechaInput = r.fecha ? r.fecha.replace(' ', 'T').slice(0,16) : nowLocal();
+    document.getElementById('f-fecha').value = fechaInput;
+  } else {
+    title.textContent = 'Nueva Reserva';
+    icon.textContent = '🎤';
+    document.getElementById('f-nombre').value = '';
+    document.getElementById('f-telefono').value = '';
+    document.getElementById('f-amigos').value = '';
+    document.getElementById('f-fecha').value = nowLocal();
+  }
+  overlay.classList.add('open');
+  setTimeout(() => document.getElementById('f-nombre').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  editingId = null;
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function saveReserva() {
+  const nombre = document.getElementById('f-nombre').value.trim();
+  const telefono = document.getElementById('f-telefono').value.trim();
+  const amigos = document.getElementById('f-amigos').value.trim();
+  const fechaRaw = document.getElementById('f-fecha').value;
+
+  if (!nombre) { toast('⚠️ El nombre es obligatorio', 'error'); return; }
+  if (!telefono) { toast('⚠️ El teléfono es obligatorio', 'error'); return; }
+
+  const fecha = fechaRaw ? fechaRaw.replace('T', ' ') + ':00' : new Date().toISOString().replace('T',' ').slice(0,19);
+
+  if (editingId) {
+    const idx = reservas.findIndex(r => r.id === editingId);
+    if (idx !== -1) {
+      reservas[idx] = { ...reservas[idx], nombre, telefono, amigos, fecha };
+      toast('✅ Reserva actualizada correctamente', 'success');
+    }
+  } else {
+    reservas.push({ id: nextId++, fecha, nombre, telefono, amigos });
+    toast('🎤 Nueva reserva agregada', 'success');
+  }
+
+  closeModal();
+  renderTable();
+}
+
+// ── MODAL DETALLE ─────────────────────────────────────────────────────────────
+function openDetail(id) {
+  detailId = id;
+  const r = reservas.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('detail-title').textContent = r.nombre;
+  const amigosArr = r.amigos ? r.amigos.split(',').map(a => a.trim()).filter(Boolean) : [];
+  const chips = amigosArr.map(a => `<span class="amigo-chip">${escHtml(a)}</span>`).join(' ') || '<span style="color:var(--muted)">Sin amigos registrados</span>';
+  document.getElementById('detail-body').innerHTML = `
+    <div class="form-group">
+      <label>Fecha y Hora</label>
+      <div style="padding:10px 14px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);color:var(--muted)">${formatFecha(r.fecha)}</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombre y Apellido</label>
+        <div style="padding:10px 14px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);color:#e879f9;font-weight:700">${escHtml(r.nombre)}</div>
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <div style="padding:10px 14px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);color:#a78bfa;font-family:monospace">${escHtml(r.telefono)}</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Amigos (${amigosArr.length})</label>
+      <div style="padding:10px 14px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);line-height:2">${chips}</div>
+    </div>
+  `;
+  document.getElementById('detail-overlay').classList.add('open');
+}
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  detailId = null;
+}
+function closeDetailOutside(e) {
+  if (e.target === document.getElementById('detail-overlay')) closeDetail();
+}
+function editFromDetail() {
+  const id = detailId;
+  closeDetail();
+  openModal(id);
+}
+
+// ── MODAL CONFIRMAR ELIMINAR ──────────────────────────────────────────────────
+function openConfirm(id) {
+  deletingId = id;
+  const r = reservas.find(x => x.id === id);
+  if (r) document.getElementById('confirm-desc').textContent = `Se eliminará la reserva de "${r.nombre}". Esta acción no se puede deshacer.`;
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  deletingId = null;
+}
+function closeConfirmOutside(e) {
+  if (e.target === document.getElementById('confirm-overlay')) closeConfirm();
+}
+function confirmDelete() {
+  if (deletingId === null) return;
+  const r = reservas.find(x => x.id === deletingId);
+  reservas = reservas.filter(x => x.id !== deletingId);
+  closeConfirm();
+  renderTable();
+  toast(`🗑 Reserva de "${r?.nombre}" eliminada`, 'info');
+}
+
+// ── EXPORT EXCEL ──────────────────────────────────────────────────────────────
+function exportExcel() {
+  if (typeof XLSX === 'undefined') {
+    toast('⚠️ La librería Excel no está disponible', 'error');
+    return;
+  }
+
+  // Armar datos con encabezados originales de la planilla
+  const data = [
+    ['Marca temporal', 'Nombre y Apellido', 'Nro de Teléfono de Contacto', '¿Venis Con Amigos? Completa Sus Nombre y Apellido (Separado Por "," Coma)']
+  ];
+  reservas.forEach(r => {
+    data.push([r.fecha, r.nombre, r.telefono, r.amigos]);
+  });
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(data);
+
+  // Ancho de columnas
+  ws['!cols'] = [
+    { wch: 22 },  // Marca temporal
+    { wch: 28 },  // Nombre
+    { wch: 24 },  // Teléfono
+    { wch: 60 },  // Amigos
+  ];
+
+  // Estilo de encabezado (negrita)
+  const headerRange = XLSX.utils.decode_range(ws['!ref']);
+  for (let C = headerRange.s.c; C <= headerRange.e.c; C++) {
+    const cellAddr = XLSX.utils.encode_cell({ r: 0, c: C });
+    if (!ws[cellAddr]) continue;
+    ws[cellAddr].s = {
+      font: { bold: true },
+      fill: { fgColor: { rgb: 'C026D3' } },
+      alignment: { horizontal: 'center' }
+    };
+  }
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Respuestas de formulario 1');
+
+  const fecha = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `KaraokeDeRo_Reservas_${fecha}.xlsx`);
+  toast('📊 Excel exportado correctamente', 'success');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(40px)'; t.style.transition = '.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModal(); closeConfirm(); closeDetail();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if (document.getElementById('modal-overlay').classList.contains('open')) saveReserva();
+  }
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderTable();
+</script>
+</body>
+</html>
