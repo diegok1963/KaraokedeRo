@@ -928,30 +928,34 @@ function importExcel(event) {
       const data = new Uint8Array(e.target.result);
       const wb = XLSX.read(data, { type: 'array', cellDates: true });
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
 
-      if (rows.length < 2) { toast('⚠️ El archivo no tiene datos', 'error'); return; }
+      // Leer como JSON con encabezados automáticos
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
-      // Detectar columnas por encabezado
-      const headers = rows[0].map(h => String(h).toLowerCase());
-      const colFecha    = headers.findIndex(h => h.includes('temporal') || h.includes('fecha'));
-      const colNombre   = headers.findIndex(h => h.includes('nombre') && h.includes('apellido'));
-      const colTelefono = headers.findIndex(h => h.includes('tel'));
-      const colAmigos   = headers.findIndex(h => h.includes('amigo') || h.includes('venis'));
+      if (rows.length === 0) { toast('⚠️ El archivo no tiene datos', 'error'); return; }
+
+      // Detectar nombres de columnas reales
+      const firstRow = rows[0];
+      const keys = Object.keys(firstRow);
+
+      const keyFecha    = keys.find(k => k.toLowerCase().includes('temporal') || k.toLowerCase().includes('fecha')) || keys[0];
+      const keyNombre   = keys.find(k => k.toLowerCase().includes('nombre'))   || keys[1];
+      const keyTelefono = keys.find(k => k.toLowerCase().includes('tel'))      || keys[2];
+      const keyAmigos   = keys.find(k => k.toLowerCase().includes('amigo') || k.toLowerCase().includes('venis')) || keys[3];
 
       let importados = 0;
       const nuevas = [];
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row || row.every(c => c === '')) continue;
 
-        const nombre = String(row[colNombre] || '').trim();
-        if (!nombre) continue;
+      rows.forEach(row => {
+        const nombre = String(row[keyNombre] || '').trim();
+        if (!nombre) return;
 
-        const fechaRaw = row[colFecha];
+        const fechaRaw = row[keyFecha];
         let fecha = '';
         if (fechaRaw instanceof Date) {
-          fecha = fechaRaw.toISOString().replace('T', ' ').slice(0, 19);
+          // Ajustar zona horaria local
+          const d = new Date(fechaRaw.getTime() - fechaRaw.getTimezoneOffset() * 60000);
+          fecha = d.toISOString().replace('T', ' ').slice(0, 19);
         } else if (fechaRaw) {
           fecha = String(fechaRaw);
         }
@@ -960,17 +964,16 @@ function importExcel(event) {
           id: nextId++,
           fecha,
           nombre,
-          telefono: String(row[colTelefono] || '').trim(),
-          amigos:   String(row[colAmigos]   || '').trim()
+          telefono: String(row[keyTelefono] || '').trim(),
+          amigos:   String(row[keyAmigos]   || '').trim()
         });
         importados++;
-      }
+      });
 
-      if (importados === 0) { toast('⚠️ No se encontraron reservas válidas', 'error'); return; }
+      if (importados === 0) { toast('⚠️ No se encontraron reservas válidas en el archivo', 'error'); return; }
 
-      // Preguntar si reemplazar o agregar
       if (reservas.length > 0) {
-        if (confirm(`¿Qué querés hacer con las ${reservas.length} reservas actuales?\n\nAceptar = Reemplazar todo\nCancelar = Agregar a las existentes`)) {
+        if (confirm(`¿Qué querés hacer con las ${reservas.length} reservas actuales?\n\n✅ Aceptar = Reemplazar todo\n❌ Cancelar = Agregar a las existentes`)) {
           reservas = nuevas;
         } else {
           reservas = [...reservas, ...nuevas];
@@ -982,10 +985,11 @@ function importExcel(event) {
       currentPage = 1;
       renderTable();
       toast(`📥 ${importados} reserva${importados !== 1 ? 's' : ''} importada${importados !== 1 ? 's' : ''} correctamente`, 'success');
+
     } catch(err) {
       toast('❌ Error al leer el archivo: ' + err.message, 'error');
+      console.error(err);
     }
-    // Limpiar input para permitir reimportar el mismo archivo
     event.target.value = '';
   };
   reader.readAsArrayBuffer(file);
