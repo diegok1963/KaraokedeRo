@@ -917,57 +917,78 @@ function confirmDelete() {
 
 // ── IMPORT EXCEL ──────────────────────────────────────────────────────────────
 function importExcel(event) {
-  const file = event.target.files[0];
+  var file = event.target.files[0];
   if (!file) return;
 
-  const reader = new FileReader();
+  toast('⏳ Leyendo archivo...', 'info');
+
+  var reader = new FileReader();
+
+  reader.onerror = function() {
+    toast('❌ No se pudo leer el archivo', 'error');
+  };
+
   reader.onload = function(e) {
     try {
-      if (typeof XLSX === 'undefined') { toast('⚠️ Librería Excel no disponible', 'error'); return; }
+      var wb = XLSX.read(e.target.result, { type: 'binary', cellDates: true });
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var allRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
 
-      const data = new Uint8Array(e.target.result);
-      const wb = XLSX.read(data, { type: 'array', cellDates: true });
-      const ws = wb.Sheets[wb.SheetNames[0]];
+      if (!allRows || allRows.length < 2) {
+        toast('⚠️ El archivo no tiene datos', 'error');
+        return;
+      }
 
-      
-      const keyNombre   = keys.find(k => k.toLowerCase().includes('nombre'))   || keys[1];
-      const keyTelefono = keys.find(k => k.toLowerCase().includes('tel'))      || keys[2];
-      const keyAmigos   = keys.find(k => k.toLowerCase().includes('amigo') || k.toLowerCase().includes('venis')) || keys[3];
+      var headers = allRows[0];
+      var dataRows = allRows.slice(1);
 
-      let importados = 0;
-      const nuevas = [];
+      var iN = -1, iT = -1, iA = -1, iF = -1;
+      for (var h = 0; h < headers.length; h++) {
+        var hh = String(headers[h]).toLowerCase();
+        if (hh.includes('nombre')) iN = h;
+        if (hh.includes('tel')) iT = h;
+        if (hh.includes('amigo') || hh.includes('venis')) iA = h;
+        if (hh.includes('temporal') || hh.includes('fecha')) iF = h;
+      }
+      if (iN === -1) iN = 1;
+      if (iT === -1) iT = 2;
+      if (iA === -1) iA = 3;
+      if (iF === -1) iF = 0;
 
-      rows.forEach(row => {
-        const nombre = String(row[keyNombre] || '').trim();
-        if (!nombre) return;
+      var nuevas = [];
+      for (var i = 0; i < dataRows.length; i++) {
+        var row = dataRows[i];
+        if (!row || row.length === 0) continue;
+        var nombre = String(row[iN] || '').trim();
+        if (!nombre) continue;
 
-        const fechaRaw = row[keyFecha];
-        let fecha = '';
+        var fechaRaw = row[iF];
+        var fecha = '';
         if (fechaRaw instanceof Date) {
-          // Ajustar zona horaria local
-          const d = new Date(fechaRaw.getTime() - fechaRaw.getTimezoneOffset() * 60000);
-          fecha = d.toISOString().replace('T', ' ').slice(0, 19);
-        } else if (fechaRaw) {
-          fecha = String(fechaRaw);
+          fecha = fechaRaw.toISOString().replace('T', ' ').slice(0, 19);
+        } else {
+          fecha = String(fechaRaw || '');
         }
 
         nuevas.push({
           id: nextId++,
-          fecha,
-          nombre,
-          telefono: String(row[keyTelefono] || '').trim(),
-          amigos:   String(row[keyAmigos]   || '').trim()
+          fecha: fecha,
+          nombre: nombre,
+          telefono: String(row[iT] || '').trim(),
+          amigos: String(row[iA] || '').trim()
         });
-        importados++;
-      });
+      }
 
-      if (importados === 0) { toast('⚠️ No se encontraron reservas válidas en el archivo', 'error'); return; }
+      if (nuevas.length === 0) {
+        toast('⚠️ No se encontraron reservas válidas', 'error');
+        return;
+      }
 
       if (reservas.length > 0) {
-        if (confirm(`¿Qué querés hacer con las ${reservas.length} reservas actuales?\n\n✅ Aceptar = Reemplazar todo\n❌ Cancelar = Agregar a las existentes`)) {
+        if (confirm('¿Reemplazar las reservas actuales?\n\nAceptar = Reemplazar\nCancelar = Agregar')) {
           reservas = nuevas;
         } else {
-          reservas = [...reservas, ...nuevas];
+          reservas = reservas.concat(nuevas);
         }
       } else {
         reservas = nuevas;
@@ -975,15 +996,15 @@ function importExcel(event) {
 
       currentPage = 1;
       renderTable();
-      toast(`📥 ${importados} reserva${importados !== 1 ? 's' : ''} importada${importados !== 1 ? 's' : ''} correctamente`, 'success');
+      toast('📥 ' + nuevas.length + ' reservas importadas correctamente', 'success');
 
     } catch(err) {
-      toast('❌ Error al leer el archivo: ' + err.message, 'error');
-      console.error(err);
+      toast('❌ Error: ' + err.message, 'error');
     }
     event.target.value = '';
   };
-  reader.readAsArrayBuffer(file);
+
+  reader.readAsBinaryString(file);
 }
 
 // ── EXPORT EXCEL ──────────────────────────────────────────────────────────────
