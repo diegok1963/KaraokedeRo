@@ -929,10 +929,7 @@ function importExcel(event) {
       const wb = XLSX.read(data, { type: 'array', cellDates: true });
       const ws = wb.Sheets[wb.SheetNames[0]];
 
-      // Leer como JSON con encabezados automáticos
       
-
-      const keyFecha    = keys.find(k => k.toLowerCase().includes('temporal') || k.toLowerCase().includes('fecha')) || keys[0];
       const keyNombre   = keys.find(k => k.toLowerCase().includes('nombre'))   || keys[1];
       const keyTelefono = keys.find(k => k.toLowerCase().includes('tel'))      || keys[2];
       const keyAmigos   = keys.find(k => k.toLowerCase().includes('amigo') || k.toLowerCase().includes('venis')) || keys[3];
