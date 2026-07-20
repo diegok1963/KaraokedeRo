@@ -838,20 +838,7 @@ function saveReserva() {
 
   const fecha = fechaRaw ? fechaRaw.replace('T', ' ') + ':00' : new Date().toISOString().replace('T',' ').slice(0,19);
 
-  if (editingId) {
-    const idx = reservas.findIndex(r => r.id === editingId);
-    if (idx !== -1) {
-      reservas[idx] = { ...reservas[idx], nombre, telefono, amigos, fecha };
-      toast('✅ Reserva actualizada correctamente', 'success');
-    }
-  } else {
-    reservas.push({ id: nextId++, fecha, nombre, telefono, amigos });
-    toast('🎤 Nueva reserva agregada', 'success');
-  }
-
-  closeModal();
-  renderTable();
-}
+  
 
 // ── MODAL DETALLE ─────────────────────────────────────────────────────────────
 function openDetail(id) {
