@@ -1,8 +1,9 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>KaraokeDeRo – Administrador de Reservas</title>
 <style>
 :root{--bg:#0d0d1a;--card:#16162a;--card2:#1e1e38;--accent:#c026d3;--accent2:#7c3aed;--gold:#f59e0b;--text:#f1f0ff;--muted:#9ca3af;--border:#2e2e50;--danger:#ef4444;--success:#22c55e;--input-bg:#0d0d1a}
@@ -100,102 +101,97 @@ header{background:linear-gradient(135deg,#1a0030 0%,#0d0d1a 60%,#1a001a 100%);bo
 </head>
 <body>
 <header>
-  <div class="logo-icon">🎤</div>
-  <div class="header-text"><h1>KaraokeDeRo</h1><p>Administrador de Reservas</p></div>
-  <div class="header-right">
-    <span class="badge-total" id="badge-total">0 reservas</span>
-    <button class="btn btn-primary" onclick="openModal()">＋ Nueva Reserva</button>
-  </div>
+<div class="logo-icon">🎤</div>
+<div class="header-text"><h1>KaraokeDeRo</h1><p>Administrador de Reservas</p></div>
+<div class="header-right">
+<span class="badge-total" id="badge-total">0 reservas</span>
+<button class="btn btn-primary" onclick="openModal()">＋ Nueva Reserva</button>
+</div>
 </header>
 <div class="container">
-  <div class="stats-bar">
-    <div class="stat-card s1"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total Reservas</div></div>
-    <div class="stat-card s2"><div class="stat-num" id="stat-hoy">0</div><div class="stat-label">Hoy</div></div>
-    <div class="stat-card s3"><div class="stat-num" id="stat-amigos">0</div><div class="stat-label">Total Asistentes</div></div>
-    <div class="stat-card s4"><div class="stat-num" id="stat-promedio">0</div><div class="stat-label">Prom. Amigos/Reserva</div></div>
-  </div>
-  <div class="toolbar">
-    <div class="search-wrap">
-      <span class="ico">🔍</span>
-      <input type="text" id="search-input" placeholder="Buscar por nombre, teléfono o amigos…" oninput="renderTable()"/>
-    </div>
-    <button class="btn btn-excel" onclick="exportExcel()">📊 Exportar Excel</button>
-    <button class="btn btn-import" onclick="document.getElementById('imp').click()">📥 Importar Excel</button>
-    <input type="file" id="imp" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"/>
-    <button class="btn btn-outline" onclick="clearSearch()">✕ Limpiar</button>
-  </div>
-  <div class="cards-grid" id="cards"></div>
-  <div class="pagination">
-    <div class="page-info" id="page-info"></div>
-    <div class="page-btns" id="page-btns"></div>
-  </div>
+<div class="stats-bar">
+<div class="stat-card s1"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total Reservas</div></div>
+<div class="stat-card s2"><div class="stat-num" id="stat-hoy">0</div><div class="stat-label">Hoy</div></div>
+<div class="stat-card s3"><div class="stat-num" id="stat-amigos">0</div><div class="stat-label">Total Asistentes</div></div>
+<div class="stat-card s4"><div class="stat-num" id="stat-promedio">0</div><div class="stat-label">Prom. Amigos/Reserva</div></div>
 </div>
-
+<div class="toolbar">
+<div class="search-wrap">
+<span class="ico">🔍</span>
+<input id="search-input" oninput="renderTable()" placeholder="Buscar por nombre, teléfono o amigos…" type="text"/>
+</div>
+<button class="btn btn-excel" onclick="exportExcel()">📊 Exportar Excel</button>
+<button class="btn btn-import" onclick="document.getElementById('imp').click()">📥 Importar Excel</button>
+<input accept=".xlsx,.xls" id="imp" onchange="importExcel(event)" style="display:none" type="file"/>
+<button class="btn btn-outline" onclick="document.getElementById('search-input').value='';currentPage=1;renderTable();">✕ Limpiar</button>
+</div>
+<div class="cards-grid" id="cards"></div>
+<div class="pagination">
+<div class="page-info" id="page-info"></div>
+<div class="page-btns" id="page-btns"></div>
+</div>
+</div>
 <!-- MODAL NUEVA/EDITAR -->
 <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-icon" id="modal-icon">🎤</span>
-      <h2 id="modal-title">Nueva Reserva</h2>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group"><label>Nombre y Apellido *</label><input type="text" id="f-nombre" placeholder="Ej: María González"/></div>
-        <div class="form-group"><label>Teléfono *</label><input type="tel" id="f-telefono" placeholder="Ej: 11 5555-5555"/></div>
-      </div>
-      <div class="form-group"><label>Fecha y Hora</label><input type="datetime-local" id="f-fecha"/></div>
-      <div class="form-group">
-        <label>Amigos (separados por coma)</label>
-        <textarea id="f-amigos" placeholder="Ej: Juan García, Ana López"></textarea>
-        <div class="form-hint">Ingresá los nombres separados por coma ","</div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveReserva()">💾 Guardar</button>
-    </div>
-  </div>
+<div class="modal">
+<div class="modal-header">
+<span class="modal-icon" id="modal-icon">🎤</span>
+<h2 id="modal-title">Nueva Reserva</h2>
+<button class="modal-close" onclick="closeModal()">✕</button>
 </div>
-
+<div class="modal-body">
+<div class="form-row">
+<div class="form-group"><label>Nombre y Apellido *</label><input id="f-nombre" placeholder="Ej: María González" type="text"/></div>
+<div class="form-group"><label>Teléfono *</label><input id="f-telefono" placeholder="Ej: 11 5555-5555" type="tel"/></div>
+</div>
+<div class="form-group"><label>Fecha y Hora</label><input id="f-fecha" type="datetime-local"/></div>
+<div class="form-group">
+<label>Amigos (separados por coma)</label>
+<textarea id="f-amigos" placeholder="Ej: Juan García, Ana López"></textarea>
+<div class="form-hint">Ingresá los nombres separados por coma ","</div>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+<button class="btn btn-primary" onclick="saveReserva()">💾 Guardar</button>
+</div>
+</div>
+</div>
 <!-- MODAL CONFIRMAR ELIMINAR -->
 <div class="modal-overlay" id="confirm-overlay" onclick="if(event.target===this)closeConfirm()">
-  <div class="modal confirm-modal" style="max-width:400px">
-    <div class="modal-header">
-      <span class="modal-icon">⚠️</span>
-      <h2>Confirmar eliminación</h2>
-      <button class="modal-close" onclick="closeConfirm()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="confirm-icon">🗑️</div>
-      <h3>¿Eliminar esta reserva?</h3>
-      <p id="confirm-desc">Esta acción no se puede deshacer.</p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeConfirm()">Cancelar</button>
-      <button class="btn btn-danger" onclick="confirmDelete()">🗑 Eliminar</button>
-    </div>
-  </div>
+<div class="modal confirm-modal" style="max-width:400px">
+<div class="modal-header">
+<span class="modal-icon">⚠️</span>
+<h2>Confirmar eliminación</h2>
+<button class="modal-close" onclick="closeConfirm()">✕</button>
 </div>
-
+<div class="modal-body">
+<div class="confirm-icon">🗑️</div>
+<h3>¿Eliminar esta reserva?</h3>
+<p id="confirm-desc">Esta acción no se puede deshacer.</p>
+</div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeConfirm()">Cancelar</button>
+<button class="btn btn-danger" onclick="confirmDelete()">🗑 Eliminar</button>
+</div>
+</div>
+</div>
 <!-- MODAL DETALLE -->
 <div class="modal-overlay" id="detail-overlay" onclick="if(event.target===this)closeDetail()">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-icon">👤</span>
-      <h2 id="detail-title">Detalle</h2>
-      <button class="modal-close" onclick="closeDetail()">✕</button>
-    </div>
-    <div class="modal-body" id="detail-body"></div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeDetail()">Cerrar</button>
-      <button class="btn btn-primary" onclick="editFromDetail()">✏️ Editar</button>
-    </div>
-  </div>
+<div class="modal">
+<div class="modal-header">
+<span class="modal-icon">👤</span>
+<h2 id="detail-title">Detalle</h2>
+<button class="modal-close" onclick="closeDetail()">✕</button>
 </div>
-
+<div class="modal-body" id="detail-body"></div>
+<div class="modal-footer">
+<button class="btn btn-outline" onclick="closeDetail()">Cerrar</button>
+<button class="btn btn-primary" onclick="editFromDetail()">✏️ Editar</button>
+</div>
+</div>
+</div>
 <div id="toast-container"></div>
-
 <script src="xlsx.min.js"></script>
 <script>
 var reservas = [
