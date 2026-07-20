@@ -306,6 +306,8 @@
       grid-column: 1/-1;
     }
     .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+    .amigos-list { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+    .amigo-row { font-size: 0.85rem; color: #c4b5fd; padding: 4px 8px; background: rgba(124,58,237,0.15); border-left: 2px solid rgba(124,58,237,0.5); border-radius: 4px; }
 
     /* ── MODAL ── */
     .modal-overlay {
@@ -704,7 +706,7 @@ function renderTable() {
   } else {
     tbody.innerHTML = page.map((r, idx) => {
       const amigosArr = r.amigos ? r.amigos.split(',').map(a => a.trim()).filter(Boolean) : [];
-      const chips = amigosArr.map(a => `<span class="amigo-chip">${escHtml(a)}</span>`).join('');
+      const chips = amigosArr.map(a => `<div class="amigo-row">👤 ${escHtml(a)}</div>`).join('');
       const fechaFmt = formatFecha(r.fecha);
       const num = (currentPage - 1) * PAGE_SIZE + idx + 1;
       return `<div class="reserva-card">
@@ -727,7 +729,7 @@ function renderTable() {
             <span class="card-field-icon">👥</span>
             <div class="card-field-content">
               <div class="card-field-label">Amigos (${amigosArr.length})</div>
-              <div>${chips || '<span style="color:var(--muted);font-size:.8rem">Sin amigos registrados</span>'}</div>
+              <div class="amigos-list">${chips || '<span style="color:var(--muted);font-size:.8rem">Sin amigos registrados</span>'}</div>
             </div>
           </div>
         </div>
