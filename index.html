@@ -930,13 +930,7 @@ function importExcel(event) {
       const ws = wb.Sheets[wb.SheetNames[0]];
 
       // Leer como JSON con encabezados automáticos
-      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-
-      if (rows.length === 0) { toast('⚠️ El archivo no tiene datos', 'error'); return; }
-
-      // Detectar nombres de columnas reales
-      const firstRow = rows[0];
-      const keys = Object.keys(firstRow);
+      
 
       const keyFecha    = keys.find(k => k.toLowerCase().includes('temporal') || k.toLowerCase().includes('fecha')) || keys[0];
       const keyNombre   = keys.find(k => k.toLowerCase().includes('nombre'))   || keys[1];
