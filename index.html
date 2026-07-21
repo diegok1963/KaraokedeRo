@@ -341,6 +341,73 @@ function getFiltered() {
   updateStats();
 }
 
+function renderTable() {
+  var filtered = getFiltered().slice().sort(function(a,b){
+    var va = new Date(a.fecha||""), vb = new Date(b.fecha||"");
+    return va - vb;
+  });
+  var total = filtered.length;
+  var totalPages = Math.max(1, Math.ceil(total/PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+  var start = (currentPage-1)*PAGE_SIZE;
+  var page = filtered.slice(start, start+PAGE_SIZE);
+  var cards = document.getElementById("cards");
+
+  if (page.length === 0) {
+    cards.innerHTML = '<div class="empty-state"><span class="empty-icon">&#127925;</span>No se encontraron reservas</div>';
+  } else {
+    var html = "";
+    for (var i=0; i<page.length; i++) {
+      var r = page[i];
+      var num = start + i + 1;
+      var amigosArr = r.amigos ? r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean) : [];
+      var amigosHtml = "";
+      if (amigosArr.length > 0) {
+        for (var j=0; j<amigosArr.length; j++) {
+          amigosHtml += '<div class="amigo-row">&#128100; ' + escHtml(amigosArr[j]) + '</div>';
+        }
+      } else {
+        amigosHtml = '<span style="color:var(--muted);font-size:.8rem">Sin amigos registrados</span>';
+      }
+      html += '<div class="reserva-card">';
+      html += '<div class="card-top">';
+      html += '<div><div class="card-nombre">Reserva de ' + escHtml(r.nombre) + '</div>';
+      html += '<div class="card-fecha">&#128197; ' + formatFecha(r.fecha) + '</div></div>';
+      html += '<span class="card-num">#' + num + '</span></div>';
+      html += '<div class="card-body">';
+      html += '<div class="card-field"><span class="card-field-icon">&#128222;</span>';
+      html += '<div><div class="card-field-label">Telefono</div>';
+      html += '<div class="card-field-value">' + escHtml(r.telefono) + '</div></div></div>';
+      html += '<div class="card-field"><span class="card-field-icon">&#128101;</span>';
+      html += '<div><div class="card-field-label">Amigos (' + amigosArr.length + ')</div>';
+      html += '<div class="amigos-list">' + amigosHtml + '</div></div></div>';
+      html += '</div>';
+      html += '<div class="card-footer">';
+      html += '<button class="btn btn-outline btn-sm" onclick="openDetail(' + r.id + ')">&#128065; Ver</button>';
+      html += '<button class="btn btn-success btn-sm" onclick="openModal(' + r.id + ')">&#9999;&#65039; Editar</button>';
+      html += '<button class="btn btn-danger btn-sm" onclick="openConfirm(' + r.id + ')">&#128465; Eliminar</button>';
+      html += '</div></div>';
+    }
+    cards.innerHTML = html;
+  }
+
+  document.getElementById("page-info").textContent = total===0 ? "Sin resultados" : "Mostrando "+(start+1)+"-"+Math.min(start+PAGE_SIZE,total)+" de "+total;
+  var pageBtns = document.getElementById("page-btns");
+  pageBtns.innerHTML = "";
+  function addBtn(label, pg, disabled, active) {
+    var b = document.createElement("button");
+    b.className = "page-btn" + (active?" active":"");
+    b.textContent = label;
+    b.disabled = disabled;
+    b.onclick = (function(p){ return function(){ currentPage=p; renderTable(); }; })(pg);
+    pageBtns.appendChild(b);
+  }
+  addBtn("<", currentPage-1, currentPage===1, false);
+  for (var p=1; p<=totalPages; p++) addBtn(p, p, false, p===currentPage);
+  addBtn(">", currentPage+1, currentPage===totalPages, false);
+  updateStats();
+}
+
 function openModal(id) {
   editingId = id || null;
   document.getElementById("modal-icon").textContent = id ? "E" : "M";
