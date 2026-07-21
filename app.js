@@ -49,7 +49,7 @@ function updateStats() {
       totalAmigos += reservas[i].amigos.split(",").map(function(a){return a.trim();}).filter(Boolean).length;
     }
   }
-  var promedio = total > 0 ? (totalAmigos/total).toFixed(1) : 0;
+  var promedio = total > 0 ? ((totalAmigos + total)/total).toFixed(1) : 0;
   document.getElementById("stat-total").textContent = total;
   document.getElementById("stat-amigos").textContent = totalAmigos + total;
   document.getElementById("stat-promedio").textContent = promedio;
