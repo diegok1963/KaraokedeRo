@@ -52,8 +52,16 @@ function updateStats() {
   var promedio = total > 0 ? ((totalAmigos + total)/total).toFixed(1) : 0;
   var presentes = 0, enEspera = 0;
   for (var j=0; j<reservas.length; j++) {
-    if (reservas[j].estado === "presente") presentes++;
-    else enEspera++;
+    var r = reservas[j];
+    var personas = [r.nombre];
+    if (r.amigos && r.amigos.trim()) {
+      r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean).forEach(function(a){ personas.push(a); });
+    }
+    for (var k=0; k<personas.length; k++) {
+      var key = "p" + k;
+      if (r.estados && r.estados[key] === "presente") presentes++;
+      else enEspera++;
+    }
   }
   document.getElementById("stat-total").textContent = total;
   document.getElementById("stat-amigos").textContent = totalAmigos + total;
@@ -91,17 +99,27 @@ function renderTable() {
       var r = page[i];
       var num = start + i + 1;
       var amigosArr = r.amigos ? r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean) : [];
+      var estados = r.estados || {};
+      // Titular
+      var titularKey = "p0";
+      var titularEstado = estados[titularKey] === "presente";
+      var titularBtn = '<button class="btn ' + (titularEstado ? "btn-success" : "btn-warning") + ' btn-sm-estado" onclick="togglePersona(' + r.id + ',\'p0\')">' + (titularEstado ? "&#10003;" : "&#9201;") + '</button>';
+
+      // Amigos
       var amigosHtml = "";
       if (amigosArr.length > 0) {
         for (var j=0; j<amigosArr.length; j++) {
-          amigosHtml += '<div class="amigo-row">&#128100; ' + escHtml(amigosArr[j]) + '</div>';
+          var pKey = "p" + (j+1);
+          var pEstado = estados[pKey] === "presente";
+          var pBtn = '<button class="btn ' + (pEstado ? "btn-success" : "btn-warning") + ' btn-sm-estado" onclick="togglePersona(' + r.id + ',\'' + pKey + '\')">' + (pEstado ? "&#10003;" : "&#9201;") + '</button>';
+          amigosHtml += '<div class="amigo-row">' + pBtn + ' ' + escHtml(amigosArr[j]) + '</div>';
         }
       } else {
         amigosHtml = '<span style="color:var(--muted);font-size:.8rem">Sin amigos registrados</span>';
       }
       html += '<div class="reserva-card">';
       html += '<div class="card-top">';
-      html += '<div><div class="card-nombre">Reserva de ' + escHtml(r.nombre) + '</div>';
+      html += '<div><div class="card-nombre">' + titularBtn + ' Reserva de ' + escHtml(r.nombre) + '</div>';
       html += '<div class="card-fecha">&#128197; ' + formatFecha(r.fecha) + '</div></div>';
       html += '<span class="card-num">#' + num + '</span></div>';
       html += '<div class="card-body">';
@@ -113,9 +131,6 @@ function renderTable() {
       html += '<div class="amigos-list">' + amigosHtml + '</div></div></div>';
       html += '</div>';
       html += '<div class="card-footer">';
-      var estadoClass = r.estado === "presente" ? "btn-success" : "btn-warning";
-      var estadoLabel = r.estado === "presente" ? "&#10003; Presente" : "&#9201; En Espera";
-      html += '<button class="btn ' + estadoClass + ' btn-sm" onclick="toggleEstado(' + r.id + ')">' + estadoLabel + '</button>';
       html += '<button class="btn btn-outline btn-sm" onclick="openDetail(' + r.id + ')">&#128065; Ver</button>';
       html += '<button class="btn btn-success btn-sm" onclick="openModal(' + r.id + ')">&#9999;&#65039; Editar</button>';
       html += '<button class="btn btn-danger btn-sm" onclick="openConfirm(' + r.id + ')">&#128465; Eliminar</button>';
@@ -239,10 +254,11 @@ function confirmDelete() {
   toast('Reserva de "' + nombre + '" eliminada', "info");
 }
 
-function toggleEstado(id) {
+function togglePersona(reservaId, personaKey) {
   for (var i=0; i<reservas.length; i++) {
-    if (reservas[i].id === id) {
-      reservas[i].estado = reservas[i].estado === "presente" ? "espera" : "presente";
+    if (reservas[i].id === reservaId) {
+      if (!reservas[i].estados) reservas[i].estados = {};
+      reservas[i].estados[personaKey] = reservas[i].estados[personaKey] === "presente" ? "espera" : "presente";
       break;
     }
   }
