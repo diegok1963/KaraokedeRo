@@ -50,9 +50,16 @@ function updateStats() {
     }
   }
   var promedio = total > 0 ? ((totalAmigos + total)/total).toFixed(1) : 0;
+  var presentes = 0, enEspera = 0;
+  for (var j=0; j<reservas.length; j++) {
+    if (reservas[j].estado === "presente") presentes++;
+    else enEspera++;
+  }
   document.getElementById("stat-total").textContent = total;
   document.getElementById("stat-amigos").textContent = totalAmigos + total;
   document.getElementById("stat-promedio").textContent = promedio;
+  document.getElementById("stat-presentes").textContent = presentes;
+  document.getElementById("stat-espera").textContent = enEspera;
   document.getElementById("badge-total").textContent = total + (total===1?" reserva":" reservas");
 }
 
@@ -106,6 +113,9 @@ function renderTable() {
       html += '<div class="amigos-list">' + amigosHtml + '</div></div></div>';
       html += '</div>';
       html += '<div class="card-footer">';
+      var estadoClass = r.estado === "presente" ? "btn-success" : "btn-warning";
+      var estadoLabel = r.estado === "presente" ? "&#10003; Presente" : "&#9201; En Espera";
+      html += '<button class="btn ' + estadoClass + ' btn-sm" onclick="toggleEstado(' + r.id + ')">' + estadoLabel + '</button>';
       html += '<button class="btn btn-outline btn-sm" onclick="openDetail(' + r.id + ')">&#128065; Ver</button>';
       html += '<button class="btn btn-success btn-sm" onclick="openModal(' + r.id + ')">&#9999;&#65039; Editar</button>';
       html += '<button class="btn btn-danger btn-sm" onclick="openConfirm(' + r.id + ')">&#128465; Eliminar</button>';
@@ -174,7 +184,7 @@ function saveReserva() {
     }
     toast("Reserva actualizada", "success");
   } else {
-    reservas.push({id:nextId++, fecha:fecha, nombre:nombre, telefono:telefono, amigos:amigos});
+    reservas.push({id:nextId++, fecha:fecha, nombre:nombre, telefono:telefono, amigos:amigos, estado:"espera"});
     toast("Nueva reserva agregada", "success");
   }
   closeModal();
@@ -229,6 +239,17 @@ function confirmDelete() {
   toast('Reserva de "' + nombre + '" eliminada', "info");
 }
 
+function toggleEstado(id) {
+  for (var i=0; i<reservas.length; i++) {
+    if (reservas[i].id === id) {
+      reservas[i].estado = reservas[i].estado === "presente" ? "espera" : "presente";
+      break;
+    }
+  }
+  guardarReservas();
+  renderTable();
+}
+
 function exportExcel() {
   if (typeof XLSX === "undefined") { toast("Libreria Excel no disponible", "error"); return; }
   var data = [["Marca temporal","Nombre y Apellido","Nro de Telefono de Contacto","Amigos"]];
@@ -271,7 +292,7 @@ function importExcel(event) {
         if (!nombre) continue;
         var fechaRaw = row[iF];
         var fecha = fechaRaw instanceof Date ? fechaRaw.toISOString().replace("T"," ").slice(0,19) : String(fechaRaw||"");
-        nuevas.push({id:nextId++, fecha:fecha, nombre:nombre, telefono:String(row[iT]||"").trim(), amigos:String(row[iA]||"").trim()});
+        nuevas.push({id:nextId++, fecha:fecha, nombre:nombre, telefono:String(row[iT]||"").trim(), amigos:String(row[iA]||"").trim(), estado:"espera"});
       }
       if (nuevas.length===0) { toast("No se encontraron reservas validas", "error"); return; }
       reservas = reservas.concat(nuevas);
