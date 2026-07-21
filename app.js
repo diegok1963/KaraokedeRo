@@ -1,4 +1,3 @@
-
 function cargarReservas() {
   try {
     var d = localStorage.getItem("karaoke_reservas");
@@ -52,7 +51,6 @@ function updateStats() {
   }
   var promedio = total > 0 ? (totalAmigos/total).toFixed(1) : 0;
   document.getElementById("stat-total").textContent = total;
-  document.getElementById("stat-hoy").textContent = hoyCount;
   document.getElementById("stat-amigos").textContent = totalAmigos + total;
   document.getElementById("stat-promedio").textContent = promedio;
   document.getElementById("badge-total").textContent = total + (total===1?" reserva":" reservas");
@@ -62,70 +60,8 @@ function getFiltered() {
   var q = document.getElementById("search-input").value.toLowerCase().trim();
   if (!q) return reservas;
   return reservas.filter(function(r) {
-    return r.nombre.toLowerCase().includes(q) || r.telefono.toLowerCase().includes(q) || (r.amigos||"").toLowerCase().includes(q);
+    return r.nombre.toLowerCase().indexOf(q)>=0 || r.telefono.toLowerCase().indexOf(q)>=0 || (r.amigos||"").toLowerCase().indexOf(q)>=0;
   });
-}
-
-
-  var totalPages = Math.max(1, Math.ceil(total/PAGE_SIZE));
-  if (currentPage > totalPages) currentPage = totalPages;
-  var start = (currentPage-1)*PAGE_SIZE;
-  var page = filtered.slice(start, start+PAGE_SIZE);
-  var cards = document.getElementById("cards");
-
-  if (page.length === 0) {
-    cards.innerHTML = '<div class="empty-state"><span class="empty-icon">&#127925;</span>No se encontraron reservas</div>';
-  } else {
-    var html = "";
-    for (var i=0; i<page.length; i++) {
-      var r = page[i];
-      var num = start + i + 1;
-      var amigosArr = r.amigos ? r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean) : [];
-      var amigosHtml = "";
-      if (amigosArr.length > 0) {
-        for (var j=0; j<amigosArr.length; j++) {
-          amigosHtml += '<div class="amigo-row">&#128100; ' + escHtml(amigosArr[j]) + '</div>';
-        }
-      } else {
-        amigosHtml = '<span style="color:var(--muted);font-size:.8rem">Sin amigos registrados</span>';
-      }
-      html += '<div class="reserva-card">';
-      html += '<div class="card-top">';
-      html += '<div><div class="card-nombre">Reserva de ' + escHtml(r.nombre) + '</div>';
-      html += '<div class="card-fecha">&#128197; ' + formatFecha(r.fecha) + '</div></div>';
-      html += '<span class="card-num">#' + num + '</span></div>';
-      html += '<div class="card-body">';
-      html += '<div class="card-field"><span class="card-field-icon">&#128222;</span>';
-      html += '<div><div class="card-field-label">Telefono</div>';
-      html += '<div class="card-field-value">' + escHtml(r.telefono) + '</div></div></div>';
-      html += '<div class="card-field"><span class="card-field-icon">&#128101;</span>';
-      html += '<div><div class="card-field-label">Amigos (' + amigosArr.length + ')</div>';
-      html += '<div class="amigos-list">' + amigosHtml + '</div></div></div>';
-      html += '</div>';
-      html += '<div class="card-footer">';
-      html += '<button class="btn btn-outline btn-sm" onclick="openDetail(' + r.id + ')">&#128065; Ver</button>';
-      html += '<button class="btn btn-success btn-sm" onclick="openModal(' + r.id + ')">&#9999;&#65039; Editar</button>';
-      html += '<button class="btn btn-danger btn-sm" onclick="openConfirm(' + r.id + ')">&#128465; Eliminar</button>';
-      html += '</div></div>';
-    }
-    cards.innerHTML = html;
-  }
-
-  document.getElementById("page-info").textContent = total===0 ? "Sin resultados" : "Mostrando "+(start+1)+"-"+Math.min(start+PAGE_SIZE,total)+" de "+total;
-  var pageBtns = document.getElementById("page-btns");
-  pageBtns.innerHTML = "";
-  function addBtn(label, pg, disabled, active) {
-    var b = document.createElement("button");
-    b.className = "page-btn" + (active?" active":"");
-    b.textContent = label;
-    b.disabled = disabled;
-    b.onclick = (function(p){ return function(){ currentPage=p; renderTable(); }; })(pg);
-    pageBtns.appendChild(b);
-  }
-  addBtn("<", currentPage-1, currentPage===1, false);
-  for (var p=1; p<=totalPages; p++) addBtn(p, p, false, p===currentPage);
-  addBtn(">", currentPage+1, currentPage===totalPages, false);
-  updateStats();
 }
 
 function renderTable() {
@@ -309,20 +245,15 @@ function exportExcel() {
 
 function importExcel(event) {
   var file = event.target.files[0];
-  if (!file) { toast("No se selecciono archivo", "error"); return; }
+  if (!file) return;
   toast("Leyendo archivo...", "info");
   var reader = new FileReader();
-  reader.onerror = function(){ toast("Error al leer el archivo", "error"); };
   reader.onload = function(e) {
     try {
-      if (typeof XLSX === "undefined") { toast("Libreria XLSX no disponible", "error"); return; }
-      var data = e.target.result;
-      var wb = XLSX.read(data, {type:"binary", cellDates:true});
-      if (!wb || !wb.SheetNames || wb.SheetNames.length === 0) { toast("Archivo Excel invalido", "error"); return; }
+      var wb = XLSX.read(e.target.result, {type:"binary", cellDates:true});
       var ws = wb.Sheets[wb.SheetNames[0]];
       var allRows = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
-      toast("Filas encontradas: " + allRows.length, "info");
-      if (!allRows || allRows.length < 2) { toast("El archivo no tiene datos suficientes", "error"); return; }
+      if (!allRows || allRows.length < 2) { toast("El archivo no tiene datos", "error"); return; }
       var headers = allRows[0];
       var iF=0, iN=1, iT=2, iA=3;
       for (var h=0; h<headers.length; h++) {
@@ -335,26 +266,21 @@ function importExcel(event) {
       var nuevas = [];
       for (var i=1; i<allRows.length; i++) {
         var row = allRows[i];
-        if (!row || row.length === 0) continue;
+        if (!row || row.length===0) continue;
         var nombre = String(row[iN]||"").trim();
         if (!nombre) continue;
         var fechaRaw = row[iF];
-        var fecha = "";
-        if (fechaRaw instanceof Date) {
-          fecha = fechaRaw.toISOString().replace("T"," ").slice(0,19);
-        } else {
-          fecha = String(fechaRaw||"");
-        }
+        var fecha = fechaRaw instanceof Date ? fechaRaw.toISOString().replace("T"," ").slice(0,19) : String(fechaRaw||"");
         nuevas.push({id:nextId++, fecha:fecha, nombre:nombre, telefono:String(row[iT]||"").trim(), amigos:String(row[iA]||"").trim()});
       }
-      if (nuevas.length === 0) { toast("No se encontraron reservas validas en el archivo", "error"); return; }
+      if (nuevas.length===0) { toast("No se encontraron reservas validas", "error"); return; }
       reservas = reservas.concat(nuevas);
       currentPage = 1;
       guardarReservas();
       renderTable();
-      toast(nuevas.length + " reservas importadas correctamente", "success");
+      toast(nuevas.length + " reservas importadas", "success");
     } catch(err) {
-      toast("Error al importar: " + err.message, "error");
+      toast("Error: " + err.message, "error");
     }
     event.target.value = "";
   };
@@ -362,8 +288,8 @@ function importExcel(event) {
 }
 
 document.getElementById("imp").addEventListener("change", function(e){ importExcel(e); });
-document.getElementById("btn-import") && document.getElementById("btn-import").addEventListener("click", function(){ document.getElementById("imp").click(); });
 document.addEventListener("keydown", function(e) {
   if (e.key==="Escape") { closeModal(); closeConfirm(); closeDetail(); }
 });
+
 renderTable();
