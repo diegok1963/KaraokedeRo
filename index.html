@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>KaraokeDeRo – Administrador de Reservas</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KaraokeDeRo - Administrador de Reservas</title>
 <style>
 :root{--bg:#0d0d1a;--card:#16162a;--card2:#1e1e38;--accent:#c026d3;--accent2:#7c3aed;--gold:#f59e0b;--text:#f1f0ff;--muted:#9ca3af;--border:#2e2e50;--danger:#ef4444;--success:#22c55e;--input-bg:#0d0d1a}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -101,111 +100,150 @@ header{background:linear-gradient(135deg,#1a0030 0%,#0d0d1a 60%,#1a001a 100%);bo
 </head>
 <body>
 <header>
-<div class="logo-icon">🎤</div>
-<div class="header-text"><h1>KaraokeDeRo</h1><p>Administrador de Reservas</p></div>
-<div class="header-right">
-<span class="badge-total" id="badge-total">0 reservas</span>
-<button class="btn btn-primary" onclick="openModal()">＋ Nueva Reserva</button>
-</div>
+  <div class="logo-icon">&#127908;</div>
+  <div class="header-text"><h1>KaraokeDeRo</h1><p>Administrador de Reservas</p></div>
+  <div class="header-right">
+    <span class="badge-total" id="badge-total">0 reservas</span>
+    <button class="btn btn-primary" onclick="openModal()">+ Nueva Reserva</button>
+  </div>
 </header>
 <div class="container">
-<div class="stats-bar">
-<div class="stat-card s1"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total Reservas</div></div>
-<div class="stat-card s2"><div class="stat-num" id="stat-hoy">0</div><div class="stat-label">Hoy</div></div>
-<div class="stat-card s3"><div class="stat-num" id="stat-amigos">0</div><div class="stat-label">Total Asistentes</div></div>
-<div class="stat-card s4"><div class="stat-num" id="stat-promedio">0</div><div class="stat-label">Prom. Amigos/Reserva</div></div>
+  <div class="stats-bar">
+    <div class="stat-card s1"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total Reservas</div></div>
+    <div class="stat-card s2"><div class="stat-num" id="stat-hoy">0</div><div class="stat-label">Hoy</div></div>
+    <div class="stat-card s3"><div class="stat-num" id="stat-amigos">0</div><div class="stat-label">Total Asistentes</div></div>
+    <div class="stat-card s4"><div class="stat-num" id="stat-promedio">0</div><div class="stat-label">Prom. Amigos/Reserva</div></div>
+  </div>
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="ico">&#128269;</span>
+      <input type="text" id="search-input" placeholder="Buscar por nombre, telefono o amigos..." oninput="renderTable()"/>
+    </div>
+    <button class="btn btn-excel" onclick="exportExcel()">&#128202; Exportar Excel</button>
+    <button class="btn btn-import" onclick="document.getElementById('imp').click()">&#128229; Importar Excel</button>
+    <input type="file" id="imp" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)"/>
+  </div>
+  <div class="cards-grid" id="cards"></div>
+  <div class="pagination">
+    <div class="page-info" id="page-info"></div>
+    <div class="page-btns" id="page-btns"></div>
+  </div>
 </div>
-<div class="toolbar">
-<div class="search-wrap">
-<span class="ico">🔍</span>
-<input id="search-input" oninput="renderTable()" placeholder="Buscar por nombre, teléfono o amigos…" type="text"/>
-</div>
-<button class="btn btn-excel" onclick="exportExcel()">📊 Exportar Excel</button>
-<button class="btn btn-import" onclick="document.getElementById('imp').click()">📥 Importar Excel</button>
-<input accept=".xlsx,.xls" id="imp" onchange="importExcel(event)" style="display:none" type="file"/>
-</div>
-<div class="cards-grid" id="cards"></div>
-<div class="pagination">
-<div class="page-info" id="page-info"></div>
-<div class="page-btns" id="page-btns"></div>
-</div>
-</div>
-<!-- MODAL NUEVA/EDITAR -->
+
 <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
-<div class="modal">
-<div class="modal-header">
-<span class="modal-icon" id="modal-icon">🎤</span>
-<h2 id="modal-title">Nueva Reserva</h2>
-<button class="modal-close" onclick="closeModal()">✕</button>
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-icon" id="modal-icon">&#127908;</span>
+      <h2 id="modal-title">Nueva Reserva</h2>
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Nombre y Apellido *</label><input type="text" id="f-nombre" placeholder="Ej: Maria Gonzalez"/></div>
+        <div class="form-group"><label>Telefono *</label><input type="tel" id="f-telefono" placeholder="Ej: 11 5555-5555"/></div>
+      </div>
+      <div class="form-group">
+        <label>Amigos (separados por coma)</label>
+        <textarea id="f-amigos" placeholder="Ej: Juan Garcia, Ana Lopez"></textarea>
+        <div class="form-hint">Ingresa los nombres separados por coma</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveReserva()">&#128190; Guardar</button>
+    </div>
+  </div>
 </div>
-<div class="modal-body">
-<div class="form-row">
-<div class="form-group"><label>Nombre y Apellido *</label><input id="f-nombre" placeholder="Ej: María González" type="text"/></div>
-<div class="form-group"><label>Teléfono *</label><input id="f-telefono" placeholder="Ej: 11 5555-5555" type="tel"/></div>
-</div>
-<div class="form-group"><label>Fecha y Hora (se registra automáticamente)</label><input id="f-fecha" readonly="" style="opacity:.5;cursor:not-allowed;" type="datetime-local"/></div>
-<div class="form-group">
-<label>Amigos (separados por coma)</label>
-<textarea id="f-amigos" placeholder="Ej: Juan García, Ana López"></textarea>
-<div class="form-hint">Ingresá los nombres separados por coma ","</div>
-</div>
-</div>
-<div class="modal-footer">
-<button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
-<button class="btn btn-primary" onclick="saveReserva()">💾 Guardar</button>
-</div>
-</div>
-</div>
-<!-- MODAL CONFIRMAR ELIMINAR -->
+
 <div class="modal-overlay" id="confirm-overlay" onclick="if(event.target===this)closeConfirm()">
-<div class="modal confirm-modal" style="max-width:400px">
-<div class="modal-header">
-<span class="modal-icon">⚠️</span>
-<h2>Confirmar eliminación</h2>
-<button class="modal-close" onclick="closeConfirm()">✕</button>
+  <div class="modal confirm-modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-icon">&#9888;&#65039;</span>
+      <h2>Confirmar eliminacion</h2>
+      <button class="modal-close" onclick="closeConfirm()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-icon">&#128465;&#65039;</div>
+      <h3>Eliminar esta reserva?</h3>
+      <p id="confirm-desc">Esta accion no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">&#128465; Eliminar</button>
+    </div>
+  </div>
 </div>
-<div class="modal-body">
-<div class="confirm-icon">🗑️</div>
-<h3>¿Eliminar esta reserva?</h3>
-<p id="confirm-desc">Esta acción no se puede deshacer.</p>
-</div>
-<div class="modal-footer">
-<button class="btn btn-outline" onclick="closeConfirm()">Cancelar</button>
-<button class="btn btn-danger" onclick="confirmDelete()">🗑 Eliminar</button>
-</div>
-</div>
-</div>
-<!-- MODAL DETALLE -->
+
 <div class="modal-overlay" id="detail-overlay" onclick="if(event.target===this)closeDetail()">
-<div class="modal">
-<div class="modal-header">
-<span class="modal-icon">👤</span>
-<h2 id="detail-title">Detalle</h2>
-<button class="modal-close" onclick="closeDetail()">✕</button>
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-icon">&#128100;</span>
+      <h2 id="detail-title">Detalle</h2>
+      <button class="modal-close" onclick="closeDetail()">&#10005;</button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeDetail()">Cerrar</button>
+      <button class="btn btn-primary" onclick="editFromDetail()">&#9999;&#65039; Editar</button>
+    </div>
+  </div>
 </div>
-<div class="modal-body" id="detail-body"></div>
-<div class="modal-footer">
-<button class="btn btn-outline" onclick="closeDetail()">Cerrar</button>
-<button class="btn btn-primary" onclick="editFromDetail()">✏️ Editar</button>
-</div>
-</div>
-</div>
+
 <div id="toast-container"></div>
 <script src="xlsx.min.js"></script>
+<script>
+function cargarReservas() {
+  try {
+    var d = localStorage.getItem("karaoke_reservas");
+    if (d) return JSON.parse(d);
+  } catch(e) {}
+  return [];
+}
+function guardarReservas() {
+  try { localStorage.setItem("karaoke_reservas", JSON.stringify(reservas)); } catch(e) {}
+}
+function toast(msg, type) {
+  var c = document.getElementById("toast-container");
+  var t = document.createElement("div");
+  t.className = "toast " + (type || "info");
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(function(){ t.style.opacity="0"; t.style.transform="translateX(40px)"; t.style.transition=".3s"; setTimeout(function(){ t.remove(); }, 300); }, 3000);
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function formatFecha(f) {
+  if (!f) return "-";
+  var d = new Date(f.replace(" ","T"));
+  if (isNaN(d)) return f;
+  return d.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric"}) + " " + d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+}
+function nowISO() {
+  var d = new Date();
+  var pad = function(n){ return String(n).padStart(2,"0"); };
+  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+}
 
+var reservas = cargarReservas();
+var nextId = reservas.length > 0 ? Math.max.apply(null, reservas.map(function(r){ return r.id; })) + 1 : 1;
+var editingId = null;
 var deletingId = null;
 var detailId = null;
-var sortField = "fecha";
-var sortDir = "desc";
 var currentPage = 1;
 var PAGE_SIZE = 10;
 
 function updateStats() {
   var total = reservas.length;
   var hoy = new Date().toISOString().slice(0,10);
-  var hoyCount = 0;
-  var totalAmigos = 0;
-  for (var i=0; i<reservas.length; &&="" (reservas[i].amigos="" (reservas[i].fecha.startswith(hoy))="" +='reservas[i].amigos.split(",").map(function(a){return' a.trim();}).filter(boolean).length;="" hoycount++;="" i++)="" if="" promedio="total" reservas[i].amigos.trim())="" totalamigos="" var="" {="" }=""> 0 ? (totalAmigos/total).toFixed(1) : 0;
+  var hoyCount = 0, totalAmigos = 0;
+  for (var i=0; i<reservas.length; i++) {
+    if (reservas[i].fecha && reservas[i].fecha.startsWith(hoy)) hoyCount++;
+    if (reservas[i].amigos && reservas[i].amigos.trim()) {
+      totalAmigos += reservas[i].amigos.split(",").map(function(a){return a.trim();}).filter(Boolean).length;
+    }
+  }
+  var promedio = total > 0 ? (totalAmigos/total).toFixed(1) : 0;
   document.getElementById("stat-total").textContent = total;
   document.getElementById("stat-hoy").textContent = hoyCount;
   document.getElementById("stat-amigos").textContent = totalAmigos + total;
@@ -213,89 +251,65 @@ function updateStats() {
   document.getElementById("badge-total").textContent = total + (total===1?" reserva":" reservas");
 }
 
-function getSorted(arr) {
-  return arr.slice().sort(function(a,b) {
-    var va = a[sortField]||"", vb = b[sortField]||"";
-    if (sortField==="fecha") { va=new Date(va); vb=new Date(vb); }
-    else { va=va.toString().toLowerCase(); vb=vb.toString().toLowerCase(); }
-    if (va<vb) (va="" ?-1:1;="" if="" return="" sortdir="asc">vb) return sortDir==="asc"?1:-1;
-    return 0;
-  });
-}
-
 function getFiltered() {
   var q = document.getElementById("search-input").value.toLowerCase().trim();
   if (!q) return reservas;
   return reservas.filter(function(r) {
-    return r.nombre.toLowerCase().includes(q) || r.telefono.toLowerCase().includes(q) || r.amigos.toLowerCase().includes(q);
+    return r.nombre.toLowerCase().includes(q) || r.telefono.toLowerCase().includes(q) || (r.amigos||"").toLowerCase().includes(q);
   });
 }
 
-function clearSearch() {
-  document.getElementById("search-input").value = "";
-  currentPage = 1;
-  renderTable();
-}
-
-function escHtml(s) {
-  return String(s).replace(/&amp;/g,"&amp;").replace(//g,"&gt;").replace(/"/g,""");
-}
-
-function formatFecha(f) {
-  if (!f) return "—";
-  var d = new Date(f.replace(" ","T"));
-  if (isNaN(d)) return f;
-  return d.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric"}) + " " +
-         d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
-}
-
-function nowLocal() {
-  var d = new Date();
-  var pad = function(n){return String(n).padStart(2,"0");};
-  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
-}
-
 function renderTable() {
-  var filtered = getSorted(getFiltered());
+  var filtered = getFiltered().slice().sort(function(a,b){
+    var va = new Date(a.fecha||""), vb = new Date(b.fecha||"");
+    return vb - va;
+  });
   var total = filtered.length;
   var totalPages = Math.max(1, Math.ceil(total/PAGE_SIZE));
-  if (currentPage &gt; totalPages) currentPage = totalPages;
+  if (currentPage > totalPages) currentPage = totalPages;
   var start = (currentPage-1)*PAGE_SIZE;
   var page = filtered.slice(start, start+PAGE_SIZE);
   var cards = document.getElementById("cards");
 
   if (page.length === 0) {
-    cards.innerHTML = "<div class='\"empty-state\"'><span class='\"empty-icon\"'>🎵</span>No se encontraron reservas</div>";
+    cards.innerHTML = '<div class="empty-state"><span class="empty-icon">&#127925;</span>No se encontraron reservas</div>';
   } else {
     var html = "";
-    for (var i=0; i<page.length; +="" 1;="" :="" ?="" [];="" a.trim();}).filter(boolean)="" amigosarr="r.amigos" amigoshtml="amigosArr.length" i="" i++)="" num="start" r="page[i];" r.amigos.split(",").map(function(a){return="" var="" {=""> 0
-        ? amigosArr.map(function(a){return "<div class='\"amigo-row\"'>👤 "+escHtml(a)+"</div>";}).join("")
-        : "<span style='\"color:var(--muted);font-size:.8rem\"'>Sin amigos registrados</span>";
-      html += "<div class='\"reserva-card\"'>";
-      html += "<div class='\"card-top\"'>";
-      html += "<div><div class='\"card-nombre\"'>Reserva de "+escHtml(r.nombre)+"</div>";
-      html += "<div class='\"card-fecha\"'>📅 "+formatFecha(r.fecha)+"</div></div>";
-      html += "<span class='\"card-num\"'>#"+num+"</span></div>";
-      html += "<div class='\"card-body\"'>";
-      html += "<div class='\"card-field\"'><span class='\"card-field-icon\"'>📞</span>";
-      html += "<div><div class='\"card-field-label\"'>Teléfono</div>";
-      html += "<div class='\"card-field-value\"'>"+escHtml(r.telefono)+"</div></div></div>";
-      html += "<div class='\"card-field\"'><span class='\"card-field-icon\"'>👥</span>";
-      html += "<div><div class='\"card-field-label\"'>Amigos ("+amigosArr.length+")</div>";
-      html += "<div class='\"amigos-list\"'>"+amigosHtml+"</div></div></div>";
-      html += "</div>";
-      html += "<div class='\"card-footer\"'>";
-      html += "<button btn-outline="" btn-sm\"="" class='\"btn' onclick='\"openDetail("+r.id+")\"'>👁 Ver</button>";
-      html += "<button btn-sm\"="" btn-success="" class='\"btn' onclick='\"openModal("+r.id+")\"'>✏️ Editar</button>";
-      html += "<button btn-danger="" btn-sm\"="" class='\"btn' onclick='\"openConfirm("+r.id+")\"'>🗑 Eliminar</button>";
-      html += "</div></div>";
+    for (var i=0; i<page.length; i++) {
+      var r = page[i];
+      var num = start + i + 1;
+      var amigosArr = r.amigos ? r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean) : [];
+      var amigosHtml = "";
+      if (amigosArr.length > 0) {
+        for (var j=0; j<amigosArr.length; j++) {
+          amigosHtml += '<div class="amigo-row">&#128100; ' + escHtml(amigosArr[j]) + '</div>';
+        }
+      } else {
+        amigosHtml = '<span style="color:var(--muted);font-size:.8rem">Sin amigos registrados</span>';
+      }
+      html += '<div class="reserva-card">';
+      html += '<div class="card-top">';
+      html += '<div><div class="card-nombre">Reserva de ' + escHtml(r.nombre) + '</div>';
+      html += '<div class="card-fecha">&#128197; ' + formatFecha(r.fecha) + '</div></div>';
+      html += '<span class="card-num">#' + num + '</span></div>';
+      html += '<div class="card-body">';
+      html += '<div class="card-field"><span class="card-field-icon">&#128222;</span>';
+      html += '<div><div class="card-field-label">Telefono</div>';
+      html += '<div class="card-field-value">' + escHtml(r.telefono) + '</div></div></div>';
+      html += '<div class="card-field"><span class="card-field-icon">&#128101;</span>';
+      html += '<div><div class="card-field-label">Amigos (' + amigosArr.length + ')</div>';
+      html += '<div class="amigos-list">' + amigosHtml + '</div></div></div>';
+      html += '</div>';
+      html += '<div class="card-footer">';
+      html += '<button class="btn btn-outline btn-sm" onclick="openDetail(' + r.id + ')">&#128065; Ver</button>';
+      html += '<button class="btn btn-success btn-sm" onclick="openModal(' + r.id + ')">&#9999;&#65039; Editar</button>';
+      html += '<button class="btn btn-danger btn-sm" onclick="openConfirm(' + r.id + ')">&#128465; Eliminar</button>';
+      html += '</div></div>';
     }
     cards.innerHTML = html;
   }
 
-  document.getElementById("page-info").textContent = total===0 ? "Sin resultados" :
-    "Mostrando "+(start+1)+"–"+Math.min(start+PAGE_SIZE,total)+" de "+total;
-
+  document.getElementById("page-info").textContent = total===0 ? "Sin resultados" : "Mostrando "+(start+1)+"-"+Math.min(start+PAGE_SIZE,total)+" de "+total;
   var pageBtns = document.getElementById("page-btns");
   pageBtns.innerHTML = "";
   function addBtn(label, pg, disabled, active) {
@@ -303,35 +317,33 @@ function renderTable() {
     b.className = "page-btn" + (active?" active":"");
     b.textContent = label;
     b.disabled = disabled;
-    b.onclick = (function(p){return function(){currentPage=p;renderTable();};})(pg);
+    b.onclick = (function(p){ return function(){ currentPage=p; renderTable(); }; })(pg);
     pageBtns.appendChild(b);
   }
-  addBtn("‹", currentPage-1, currentPage===1, false);
-  for (var p=1; p&lt;=totalPages; p++) addBtn(p, p, false, p===currentPage);
-  addBtn("›", currentPage+1, currentPage===totalPages, false);
-
+  addBtn("<", currentPage-1, currentPage===1, false);
+  for (var p=1; p<=totalPages; p++) addBtn(p, p, false, p===currentPage);
+  addBtn(">", currentPage+1, currentPage===totalPages, false);
   updateStats();
 }
 
 function openModal(id) {
   editingId = id || null;
-  document.getElementById("modal-icon").textContent = id ? "✏️" : "🎤";
+  document.getElementById("modal-icon").textContent = id ? "E" : "M";
   document.getElementById("modal-title").textContent = id ? "Editar Reserva" : "Nueva Reserva";
   if (id) {
-    var r = reservas.find(function(x){return x.id===id;});
+    var r = null;
+    for (var i=0; i<reservas.length; i++) { if (reservas[i].id===id) { r=reservas[i]; break; } }
     if (!r) return;
     document.getElementById("f-nombre").value = r.nombre;
     document.getElementById("f-telefono").value = r.telefono;
-    document.getElementById("f-amigos").value = r.amigos;
-    document.getElementById("f-fecha").value = r.fecha ? r.fecha.replace(" ","T").slice(0,16) : nowLocal();
+    document.getElementById("f-amigos").value = r.amigos || "";
   } else {
     document.getElementById("f-nombre").value = "";
     document.getElementById("f-telefono").value = "";
     document.getElementById("f-amigos").value = "";
-    document.getElementById("f-fecha").value = nowLocal();
   }
   document.getElementById("modal-overlay").classList.add("open");
-  setTimeout(function(){document.getElementById("f-nombre").focus();},100);
+  setTimeout(function(){ document.getElementById("f-nombre").focus(); }, 100);
 }
 
 function closeModal() {
@@ -343,17 +355,22 @@ function saveReserva() {
   var nombre = document.getElementById("f-nombre").value.trim();
   var telefono = document.getElementById("f-telefono").value.trim();
   var amigos = document.getElementById("f-amigos").value.trim();
-  var fechaRaw = document.getElementById("f-fecha").value;
-  if (!nombre) { toast("⚠️ El nombre es obligatorio","error"); return; }
-  if (!telefono) { toast("⚠️ El teléfono es obligatorio","error"); return; }
-  var fecha = fechaRaw ? fechaRaw.replace("T"," ")+":00" : new Date().toISOString().replace("T"," ").slice(0,19);
+  if (!nombre) { toast("El nombre es obligatorio", "error"); return; }
+  if (!telefono) { toast("El telefono es obligatorio", "error"); return; }
+  var fecha = nowISO();
   if (editingId) {
-    var idx = reservas.findIndex(function(r){return r.id===editingId;});
-    if (idx !== -1) { reservas[idx] = {id:editingId, fecha:fecha, nombre:nombre, telefono:telefono, amigos:amigos}; }
-    toast("✅ Reserva actualizada","success");
+    for (var i=0; i<reservas.length; i++) {
+      if (reservas[i].id===editingId) {
+        reservas[i].nombre = nombre;
+        reservas[i].telefono = telefono;
+        reservas[i].amigos = amigos;
+        break;
+      }
+    }
+    toast("Reserva actualizada", "success");
   } else {
     reservas.push({id:nextId++, fecha:fecha, nombre:nombre, telefono:telefono, amigos:amigos});
-    toast("🎤 Nueva reserva agregada","success");
+    toast("Nueva reserva agregada", "success");
   }
   closeModal();
   guardarReservas();
@@ -363,44 +380,96 @@ function saveReserva() {
 
 function openDetail(id) {
   detailId = id;
-  var r = reservas.find(function(x){return x.id===id;});
+  var r = null;
+  for (var i=0; i<reservas.length; i++) { if (reservas[i].id===id) { r=reservas[i]; break; } }
   if (!r) return;
   document.getElementById("detail-title").textContent = r.nombre;
   var amigosArr = r.amigos ? r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean) : [];
-  var chips = amigosArr.map(function(a){return "<span 8px;border-radius:20px;margin:2px;display:inline-block\"="" rgba(124,58,237,.4);color:#c4b5fd;font-size:.72rem;padding:2px="" solid="" style='\"background:rgba(124,58,237,.2);border:1px'>"+escHtml(a)+"</span>";}).join("") || "<span style='\"color:var(--muted)\"'>Sin amigos</span>";
+  var chips = "";
+  for (var j=0; j<amigosArr.length; j++) {
+    chips += '<div class="amigo-row">&#128100; ' + escHtml(amigosArr[j]) + '</div>';
+  }
+  if (!chips) chips = '<span style="color:var(--muted)">Sin amigos</span>';
   document.getElementById("detail-body").innerHTML =
-    "<div class='\"form-group\"'><label>Fecha y Hora</label><div 14px;background:var(--input-bg);border-radius:10px;border:1px="" solid="" style='\"padding:10px' var(--border);color:var(--muted)\"="">"+formatFecha(r.fecha)+"</div></div>"+
-    "<div class='\"form-row\"'><div class='\"form-group\"'><label>Nombre</label><div 14px;background:var(--input-bg);border-radius:10px;border:1px="" solid="" style='\"padding:10px' var(--border);color:#e879f9;font-weight:700\"="">"+escHtml(r.nombre)+"</div></div>"+
-    "<div class='\"form-group\"'><label>Teléfono</label><div 14px;background:var(--input-bg);border-radius:10px;border:1px="" solid="" style='\"padding:10px' var(--border);color:#a78bfa;font-family:monospace\"="">"+escHtml(r.telefono)+"</div></div></div>"+
-    "<div class='\"form-group\"'><label>Amigos ("+amigosArr.length+")</label><div 14px;background:var(--input-bg);border-radius:10px;border:1px="" solid="" style='\"padding:10px' var(--border);line-height:2\"="">"+chips+"</div></div>";
+    '<div class="form-group"><label>Fecha y Hora</label><div style="padding:10px 14px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);color:var(--muted)">' + formatFecha(r.fecha) + '</div></div>' +
+    '<div class="form-row"><div class="form-group"><label>Nombre</label><div style="padding:10px 14px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);color:#e879f9;font-weight:700">' + escHtml(r.nombre) + '</div></div>' +
+    '<div class="form-group"><label>Telefono</label><div style="padding:10px 14px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);color:#a78bfa;font-family:monospace">' + escHtml(r.telefono) + '</div></div></div>' +
+    '<div class="form-group"><label>Amigos (' + amigosArr.length + ')</label><div class="amigos-list">' + chips + '</div></div>';
   document.getElementById("detail-overlay").classList.add("open");
 }
 
-function closeDetail() { document.getElementById("detail-overlay").classList.remove("open"); detailId=null; }
-function editFromDetail() { var id=detailId; closeDetail(); openModal(id); }
+function closeDetail() { document.getElementById("detail-overlay").classList.remove("open"); detailId = null; }
+function editFromDetail() { var id = detailId; closeDetail(); openModal(id); }
 
 function openConfirm(id) {
   deletingId = id;
-  var r = reservas.find(function(x){return x.id===id;});
-  if (r) document.getElementById("confirm-desc").textContent = "Se eliminará la reserva de \""+r.nombre+"\". Esta acción no se puede deshacer.";
+  var r = null;
+  for (var i=0; i<reservas.length; i++) { if (reservas[i].id===id) { r=reservas[i]; break; } }
+  if (r) document.getElementById("confirm-desc").textContent = 'Se eliminara la reserva de "' + r.nombre + '". Esta accion no se puede deshacer.';
   document.getElementById("confirm-overlay").classList.add("open");
 }
-function closeConfirm() { document.getElementById("confirm-overlay").classList.remove("open"); deletingId=null; }
+function closeConfirm() { document.getElementById("confirm-overlay").classList.remove("open"); deletingId = null; }
 function confirmDelete() {
-  if (deletingId===null) return;
-  var r = reservas.find(function(x){return x.id===deletingId;});
-  reservas = reservas.filter(function(x){return x.id!==deletingId;});
+  if (deletingId === null) return;
+  var nombre = "";
+  var nuevas = [];
+  for (var i=0; i<reservas.length; i++) {
+    if (reservas[i].id === deletingId) { nombre = reservas[i].nombre; }
+    else { nuevas.push(reservas[i]); }
+  }
+  reservas = nuevas;
   closeConfirm();
   guardarReservas();
   renderTable();
-  toast("🗑 Reserva de \""+r.nombre+"\" eliminada","info");
+  toast('Reserva de "' + nombre + '" eliminada', "info");
 }
 
 function exportExcel() {
-  if (typeof XLSX === "undefined") { toast("⚠️ Librería Excel no disponible","error"); return; }
-  var data = [["Marca temporal","Nombre y Apellido","Nro de Teléfono de Contacto","Amigos"]];
-  for (var i=0; i<reservas.length; ").slice(0,19)="" "karaokedero_reservas_"+new="" "reservas");="" (!allrows="" (!file)="" (!nombre)="" (hh.includes("amigo")||hh.includes("venis"))="" (hh.includes("nombre"))="" (hh.includes("tel"))="" (hh.includes("temporal")||hh.includes("fecha"))="" (nuevas.length="0)" (reservas.length="" (var="" 2)="" :="" <="" ?="" allrows="XLSX.utils.sheet_to_json(ws," allrows.length="" amigos:string(row[ia]||"").trim()});="" archivo="" archivo...","info");="" celldates:true});="" continue;="" correctamente","success");="" data.push([reservas[i].fecha,="" date="" date().toisostring().slice(0,10)+".xlsx");="" datos","error");="" defval:""});="" el="" encontraron="" excel="" exportado="" fecha="fechaRaw" fecha:fecha,="" fecharaw="row[iF];" fecharaw.toisostring().replace("t","="" file="event.target.files[0];" filereader();="" for="" function="" h="0;" h++)="" h<headers.length;="" headers="allRows[0];" hh="String(headers[h]).toLowerCase();" i="1;" i++)="" i<allrows.length;="" ia="h;" if="" importexcel(event)="" in="h;" instanceof="" it="h;" leyendo="" no="" nombre='String(row[iN]||"").trim();' nombre:nombre,="" nuevas="[];" nuevas.push({id:nextid++,="" reader="new" reader.onload="function(e)" reservas="" reservas[i].amigos]);="" reservas[i].nombre,="" reservas[i].telefono,="" return;="" row="allRows[i];" se="" string(fecharaw||"");="" telefono:string(row[it]||"").trim(),="" tiene="" toast("⏳="" toast("⚠️="" toast("📊="" try="" var="" válidas","error");="" wb="XLSX.read(e.target.result," ws="wb.Sheets[wb.SheetNames[0]];" ws,="" ws["!cols"]="[{wch:22},{wch:28},{wch:24},{wch:60}];" xlsx.utils.book_append_sheet(wb,="" xlsx.writefile(wb,="" {="" {header:1,="" {type:"binary",="" ||="" }="">0) {
-        if (confirm("¿Reemplazar las reservas actuales?\nAceptar = Reemplazar\nCancelar = Agregar")) {
+  if (typeof XLSX === "undefined") { toast("Libreria Excel no disponible", "error"); return; }
+  var data = [["Marca temporal","Nombre y Apellido","Nro de Telefono de Contacto","Amigos"]];
+  for (var i=0; i<reservas.length; i++) {
+    data.push([reservas[i].fecha, reservas[i].nombre, reservas[i].telefono, reservas[i].amigos]);
+  }
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(data);
+  ws["!cols"] = [{wch:22},{wch:28},{wch:24},{wch:60}];
+  XLSX.utils.book_append_sheet(wb, ws, "Reservas");
+  XLSX.writeFile(wb, "KaraokeDeRo_Reservas_" + new Date().toISOString().slice(0,10) + ".xlsx");
+  toast("Excel exportado", "success");
+}
+
+function importExcel(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  toast("Leyendo archivo...", "info");
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(e.target.result, {type:"binary", cellDates:true});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var allRows = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
+      if (!allRows || allRows.length < 2) { toast("El archivo no tiene datos", "error"); return; }
+      var headers = allRows[0];
+      var iF=0, iN=1, iT=2, iA=3;
+      for (var h=0; h<headers.length; h++) {
+        var hh = String(headers[h]).toLowerCase();
+        if (hh.includes("temporal")||hh.includes("fecha")) iF=h;
+        if (hh.includes("nombre")) iN=h;
+        if (hh.includes("tel")) iT=h;
+        if (hh.includes("amigo")||hh.includes("venis")) iA=h;
+      }
+      var nuevas = [];
+      for (var i=1; i<allRows.length; i++) {
+        var row = allRows[i];
+        var nombre = String(row[iN]||"").trim();
+        if (!nombre) continue;
+        var fechaRaw = row[iF];
+        var fecha = fechaRaw instanceof Date ? fechaRaw.toISOString().replace("T"," ").slice(0,19) : String(fechaRaw||"");
+        nuevas.push({id:nextId++, fecha:fecha, nombre:nombre, telefono:String(row[iT]||"").trim(), amigos:String(row[iA]||"").trim()});
+      }
+      if (nuevas.length===0) { toast("No se encontraron reservas validas", "error"); return; }
+      if (reservas.length > 0) {
+        if (confirm("Reemplazar las reservas actuales?\nAceptar = Reemplazar\nCancelar = Agregar")) {
           reservas = nuevas;
         } else {
           reservas = reservas.concat(nuevas);
@@ -411,32 +480,20 @@ function exportExcel() {
       currentPage = 1;
       guardarReservas();
       renderTable();
-      toast("📥 "+nuevas.length+" reservas importadas","success");
+      toast(nuevas.length + " reservas importadas", "success");
     } catch(err) {
-      toast("❌ Error: "+err.message,"error");
+      toast("Error: " + err.message, "error");
     }
     event.target.value = "";
   };
   reader.readAsBinaryString(file);
 }
 
-function toast(msg, type) {
-  var c = document.getElementById("toast-container");
-  var t = document.createElement("div");
-  t.className = "toast "+(type||"info");
-  t.textContent = msg;
-  c.appendChild(t);
-  setTimeout(function(){t.style.opacity="0";t.style.transform="translateX(40px)";t.style.transition=".3s";setTimeout(function(){t.remove();},300);},3000);
-}
-
 document.addEventListener("keydown", function(e) {
   if (e.key==="Escape") { closeModal(); closeConfirm(); closeDetail(); }
-  if ((e.ctrlKey||e.metaKey) &amp;&amp; e.key==="Enter") {
-    if (document.getElementById("modal-overlay").classList.contains("open")) saveReserva();
-  }
 });
 
 renderTable();
-
-</reservas.length;></page.length;></vb)></reservas.length;></body>
+</script>
+</body>
 </html>
