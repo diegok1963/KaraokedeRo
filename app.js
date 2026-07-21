@@ -361,11 +361,9 @@ function importExcel(event) {
   reader.readAsBinaryString(file);
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-  document.getElementById("imp").addEventListener("change", function(e){ importExcel(e); });
-  document.getElementById("btn-import") && document.getElementById("btn-import").addEventListener("click", function(){ document.getElementById("imp").click(); });
-  document.addEventListener("keydown", function(e) {
-    if (e.key==="Escape") { closeModal(); closeConfirm(); closeDetail(); }
-  });
-  renderTable();
+document.getElementById("imp").addEventListener("change", function(e){ importExcel(e); });
+document.getElementById("btn-import") && document.getElementById("btn-import").addEventListener("click", function(){ document.getElementById("imp").click(); });
+document.addEventListener("keydown", function(e) {
+  if (e.key==="Escape") { closeModal(); closeConfirm(); closeDetail(); }
 });
+renderTable();
