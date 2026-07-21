@@ -522,49 +522,52 @@ function exportExcel() {
 
 function importExcel(event) {
   var file = event.target.files[0];
-  if (!file) return;
+  if (!file) { toast("No se selecciono archivo", "error"); return; }
   toast("Leyendo archivo...", "info");
   var reader = new FileReader();
+  reader.onerror = function(){ toast("Error al leer el archivo", "error"); };
   reader.onload = function(e) {
     try {
-      var wb = XLSX.read(e.target.result, {type:"binary", cellDates:true});
+      if (typeof XLSX === "undefined") { toast("Libreria XLSX no disponible", "error"); return; }
+      var data = e.target.result;
+      var wb = XLSX.read(data, {type:"binary", cellDates:true});
+      if (!wb || !wb.SheetNames || wb.SheetNames.length === 0) { toast("Archivo Excel invalido", "error"); return; }
       var ws = wb.Sheets[wb.SheetNames[0]];
       var allRows = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
-      if (!allRows || allRows.length < 2) { toast("El archivo no tiene datos", "error"); return; }
+      toast("Filas encontradas: " + allRows.length, "info");
+      if (!allRows || allRows.length < 2) { toast("El archivo no tiene datos suficientes", "error"); return; }
       var headers = allRows[0];
       var iF=0, iN=1, iT=2, iA=3;
       for (var h=0; h<headers.length; h++) {
         var hh = String(headers[h]).toLowerCase();
-        if (hh.includes("temporal")||hh.includes("fecha")) iF=h;
-        if (hh.includes("nombre")) iN=h;
-        if (hh.includes("tel")) iT=h;
-        if (hh.includes("amigo")||hh.includes("venis")) iA=h;
+        if (hh.indexOf("temporal")>=0 || hh.indexOf("fecha")>=0) iF=h;
+        if (hh.indexOf("nombre")>=0) iN=h;
+        if (hh.indexOf("tel")>=0) iT=h;
+        if (hh.indexOf("amigo")>=0 || hh.indexOf("venis")>=0) iA=h;
       }
       var nuevas = [];
       for (var i=1; i<allRows.length; i++) {
         var row = allRows[i];
+        if (!row || row.length === 0) continue;
         var nombre = String(row[iN]||"").trim();
         if (!nombre) continue;
         var fechaRaw = row[iF];
-        var fecha = fechaRaw instanceof Date ? fechaRaw.toISOString().replace("T"," ").slice(0,19) : String(fechaRaw||"");
+        var fecha = "";
+        if (fechaRaw instanceof Date) {
+          fecha = fechaRaw.toISOString().replace("T"," ").slice(0,19);
+        } else {
+          fecha = String(fechaRaw||"");
+        }
         nuevas.push({id:nextId++, fecha:fecha, nombre:nombre, telefono:String(row[iT]||"").trim(), amigos:String(row[iA]||"").trim()});
       }
-      if (nuevas.length===0) { toast("No se encontraron reservas validas", "error"); return; }
-      if (reservas.length > 0) {
-        if (confirm("Reemplazar las reservas actuales?\nAceptar = Reemplazar\nCancelar = Agregar")) {
-          reservas = nuevas;
-        } else {
-          reservas = reservas.concat(nuevas);
-        }
-      } else {
-        reservas = nuevas;
-      }
+      if (nuevas.length === 0) { toast("No se encontraron reservas validas en el archivo", "error"); return; }
+      reservas = reservas.concat(nuevas);
       currentPage = 1;
       guardarReservas();
       renderTable();
-      toast(nuevas.length + " reservas importadas", "success");
+      toast(nuevas.length + " reservas importadas correctamente", "success");
     } catch(err) {
-      toast("Error: " + err.message, "error");
+      toast("Error al importar: " + err.message, "error");
     }
     event.target.value = "";
   };
