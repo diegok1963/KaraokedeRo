@@ -193,11 +193,7 @@ header{background:linear-gradient(135deg,#1a0030 0%,#0d0d1a 60%,#1a001a 100%);bo
 <div id="toast-container"></div>
 <script src="xlsx.min.js"></script>
 <script>
-var reservas = [
-  {id:1, fecha:"2026-07-18 23:52:12", nombre:"AAAAA", telefono:"88 8888-8888", amigos:"JUAN GARCIA, PABLO RAMIRES, PAOLA GONZALEZ, MIRTA PALACIOS"},
-  {id:2, fecha:"2026-07-19 00:05:02", nombre:"bbbbbb", telefono:"99999999999", amigos:"Juan Garcia, Pablo Ramirez, Carlos Gonzalez, Claudia Medite"}
-];
-var nextId = 3;
+
 var editingId = null;
 var deletingId = null;
 var detailId = null;
@@ -373,6 +369,7 @@ function saveReserva() {
     toast("🎤 Nueva reserva agregada","success");
   }
   closeModal();
+  guardarReservas();
   renderTable();
   exportExcel();
 }
@@ -407,6 +404,7 @@ function confirmDelete() {
   var r = reservas.find(function(x){return x.id===deletingId;});
   reservas = reservas.filter(function(x){return x.id!==deletingId;});
   closeConfirm();
+  guardarReservas();
   renderTable();
   toast("🗑 Reserva de \""+r.nombre+"\" eliminada","info");
 }
@@ -465,6 +463,7 @@ function importExcel(event) {
         reservas = nuevas;
       }
       currentPage = 1;
+      guardarReservas();
       renderTable();
       toast("📥 "+nuevas.length+" reservas importadas","success");
     } catch(err) {
