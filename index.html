@@ -574,6 +574,8 @@ function importExcel(event) {
   reader.readAsBinaryString(file);
 }
 
+document.getElementById("btn-import").addEventListener("click", function(){ document.getElementById("imp").click(); });
+document.getElementById("imp").addEventListener("change", function(e){ importExcel(e); });
 document.addEventListener("keydown", function(e) {
   if (e.key==="Escape") { closeModal(); closeConfirm(); closeDetail(); }
 });
