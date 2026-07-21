@@ -143,7 +143,7 @@ header{background:linear-gradient(135deg,#1a0030 0%,#0d0d1a 60%,#1a001a 100%);bo
 <div class="form-group"><label>Nombre y Apellido *</label><input id="f-nombre" placeholder="Ej: María González" type="text"/></div>
 <div class="form-group"><label>Teléfono *</label><input id="f-telefono" placeholder="Ej: 11 5555-5555" type="tel"/></div>
 </div>
-<div class="form-group"><label>Fecha y Hora</label><input id="f-fecha" type="datetime-local"/></div>
+<div class="form-group"><label>Fecha y Hora (se registra automáticamente)</label><input id="f-fecha" readonly="" style="opacity:.5;cursor:not-allowed;" type="datetime-local"/></div>
 <div class="form-group">
 <label>Amigos (separados por coma)</label>
 <textarea id="f-amigos" placeholder="Ej: Juan García, Ana López"></textarea>
@@ -192,9 +192,7 @@ header{background:linear-gradient(135deg,#1a0030 0%,#0d0d1a 60%,#1a001a 100%);bo
 </div>
 <div id="toast-container"></div>
 <script src="xlsx.min.js"></script>
-<script>
 
-var editingId = null;
 var deletingId = null;
 var detailId = null;
 var sortField = "fecha";
@@ -207,13 +205,7 @@ function updateStats() {
   var hoy = new Date().toISOString().slice(0,10);
   var hoyCount = 0;
   var totalAmigos = 0;
-  for (var i=0; i<reservas.length; i++) {
-    if (reservas[i].fecha.startsWith(hoy)) hoyCount++;
-    if (reservas[i].amigos && reservas[i].amigos.trim()) {
-      totalAmigos += reservas[i].amigos.split(",").map(function(a){return a.trim();}).filter(Boolean).length;
-    }
-  }
-  var promedio = total > 0 ? (totalAmigos/total).toFixed(1) : 0;
+  for (var i=0; i<reservas.length; &&="" (reservas[i].amigos="" (reservas[i].fecha.startswith(hoy))="" +='reservas[i].amigos.split(",").map(function(a){return' a.trim();}).filter(boolean).length;="" hoycount++;="" i++)="" if="" promedio="total" reservas[i].amigos.trim())="" totalamigos="" var="" {="" }=""> 0 ? (totalAmigos/total).toFixed(1) : 0;
   document.getElementById("stat-total").textContent = total;
   document.getElementById("stat-hoy").textContent = hoyCount;
   document.getElementById("stat-amigos").textContent = totalAmigos + total;
@@ -226,8 +218,7 @@ function getSorted(arr) {
     var va = a[sortField]||"", vb = b[sortField]||"";
     if (sortField==="fecha") { va=new Date(va); vb=new Date(vb); }
     else { va=va.toString().toLowerCase(); vb=vb.toString().toLowerCase(); }
-    if (va<vb) return sortDir==="asc"?-1:1;
-    if (va>vb) return sortDir==="asc"?1:-1;
+    if (va<vb) (va="" ?-1:1;="" if="" return="" sortdir="asc">vb) return sortDir==="asc"?1:-1;
     return 0;
   });
 }
@@ -247,7 +238,7 @@ function clearSearch() {
 }
 
 function escHtml(s) {
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  return String(s).replace(/&amp;/g,"&amp;").replace(//g,"&gt;").replace(/"/g,""");
 }
 
 function formatFecha(f) {
@@ -268,39 +259,35 @@ function renderTable() {
   var filtered = getSorted(getFiltered());
   var total = filtered.length;
   var totalPages = Math.max(1, Math.ceil(total/PAGE_SIZE));
-  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage &gt; totalPages) currentPage = totalPages;
   var start = (currentPage-1)*PAGE_SIZE;
   var page = filtered.slice(start, start+PAGE_SIZE);
   var cards = document.getElementById("cards");
 
   if (page.length === 0) {
-    cards.innerHTML = "<div class=\"empty-state\"><span class=\"empty-icon\">🎵</span>No se encontraron reservas</div>";
+    cards.innerHTML = "<div class='\"empty-state\"'><span class='\"empty-icon\"'>🎵</span>No se encontraron reservas</div>";
   } else {
     var html = "";
-    for (var i=0; i<page.length; i++) {
-      var r = page[i];
-      var num = start + i + 1;
-      var amigosArr = r.amigos ? r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean) : [];
-      var amigosHtml = amigosArr.length > 0
-        ? amigosArr.map(function(a){return "<div class=\"amigo-row\">👤 "+escHtml(a)+"</div>";}).join("")
-        : "<span style=\"color:var(--muted);font-size:.8rem\">Sin amigos registrados</span>";
-      html += "<div class=\"reserva-card\">";
-      html += "<div class=\"card-top\">";
-      html += "<div><div class=\"card-nombre\">Reserva de "+escHtml(r.nombre)+"</div>";
-      html += "<div class=\"card-fecha\">📅 "+formatFecha(r.fecha)+"</div></div>";
-      html += "<span class=\"card-num\">#"+num+"</span></div>";
-      html += "<div class=\"card-body\">";
-      html += "<div class=\"card-field\"><span class=\"card-field-icon\">📞</span>";
-      html += "<div><div class=\"card-field-label\">Teléfono</div>";
-      html += "<div class=\"card-field-value\">"+escHtml(r.telefono)+"</div></div></div>";
-      html += "<div class=\"card-field\"><span class=\"card-field-icon\">👥</span>";
-      html += "<div><div class=\"card-field-label\">Amigos ("+amigosArr.length+")</div>";
-      html += "<div class=\"amigos-list\">"+amigosHtml+"</div></div></div>";
+    for (var i=0; i<page.length; +="" 1;="" :="" ?="" [];="" a.trim();}).filter(boolean)="" amigosarr="r.amigos" amigoshtml="amigosArr.length" i="" i++)="" num="start" r="page[i];" r.amigos.split(",").map(function(a){return="" var="" {=""> 0
+        ? amigosArr.map(function(a){return "<div class='\"amigo-row\"'>👤 "+escHtml(a)+"</div>";}).join("")
+        : "<span style='\"color:var(--muted);font-size:.8rem\"'>Sin amigos registrados</span>";
+      html += "<div class='\"reserva-card\"'>";
+      html += "<div class='\"card-top\"'>";
+      html += "<div><div class='\"card-nombre\"'>Reserva de "+escHtml(r.nombre)+"</div>";
+      html += "<div class='\"card-fecha\"'>📅 "+formatFecha(r.fecha)+"</div></div>";
+      html += "<span class='\"card-num\"'>#"+num+"</span></div>";
+      html += "<div class='\"card-body\"'>";
+      html += "<div class='\"card-field\"'><span class='\"card-field-icon\"'>📞</span>";
+      html += "<div><div class='\"card-field-label\"'>Teléfono</div>";
+      html += "<div class='\"card-field-value\"'>"+escHtml(r.telefono)+"</div></div></div>";
+      html += "<div class='\"card-field\"'><span class='\"card-field-icon\"'>👥</span>";
+      html += "<div><div class='\"card-field-label\"'>Amigos ("+amigosArr.length+")</div>";
+      html += "<div class='\"amigos-list\"'>"+amigosHtml+"</div></div></div>";
       html += "</div>";
-      html += "<div class=\"card-footer\">";
-      html += "<button class=\"btn btn-outline btn-sm\" onclick=\"openDetail("+r.id+")\">👁 Ver</button>";
-      html += "<button class=\"btn btn-success btn-sm\" onclick=\"openModal("+r.id+")\">✏️ Editar</button>";
-      html += "<button class=\"btn btn-danger btn-sm\" onclick=\"openConfirm("+r.id+")\">🗑 Eliminar</button>";
+      html += "<div class='\"card-footer\"'>";
+      html += "<button btn-outline="" btn-sm\"="" class='\"btn' onclick='\"openDetail("+r.id+")\"'>👁 Ver</button>";
+      html += "<button btn-sm\"="" btn-success="" class='\"btn' onclick='\"openModal("+r.id+")\"'>✏️ Editar</button>";
+      html += "<button btn-danger="" btn-sm\"="" class='\"btn' onclick='\"openConfirm("+r.id+")\"'>🗑 Eliminar</button>";
       html += "</div></div>";
     }
     cards.innerHTML = html;
@@ -320,7 +307,7 @@ function renderTable() {
     pageBtns.appendChild(b);
   }
   addBtn("‹", currentPage-1, currentPage===1, false);
-  for (var p=1; p<=totalPages; p++) addBtn(p, p, false, p===currentPage);
+  for (var p=1; p&lt;=totalPages; p++) addBtn(p, p, false, p===currentPage);
   addBtn("›", currentPage+1, currentPage===totalPages, false);
 
   updateStats();
@@ -380,12 +367,12 @@ function openDetail(id) {
   if (!r) return;
   document.getElementById("detail-title").textContent = r.nombre;
   var amigosArr = r.amigos ? r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean) : [];
-  var chips = amigosArr.map(function(a){return "<span style=\"background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.4);color:#c4b5fd;font-size:.72rem;padding:2px 8px;border-radius:20px;margin:2px;display:inline-block\">"+escHtml(a)+"</span>";}).join("") || "<span style=\"color:var(--muted)\">Sin amigos</span>";
+  var chips = amigosArr.map(function(a){return "<span 8px;border-radius:20px;margin:2px;display:inline-block\"="" rgba(124,58,237,.4);color:#c4b5fd;font-size:.72rem;padding:2px="" solid="" style='\"background:rgba(124,58,237,.2);border:1px'>"+escHtml(a)+"</span>";}).join("") || "<span style='\"color:var(--muted)\"'>Sin amigos</span>";
   document.getElementById("detail-body").innerHTML =
-    "<div class=\"form-group\"><label>Fecha y Hora</label><div style=\"padding:10px 14px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);color:var(--muted)\">"+formatFecha(r.fecha)+"</div></div>"+
-    "<div class=\"form-row\"><div class=\"form-group\"><label>Nombre</label><div style=\"padding:10px 14px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);color:#e879f9;font-weight:700\">"+escHtml(r.nombre)+"</div></div>"+
-    "<div class=\"form-group\"><label>Teléfono</label><div style=\"padding:10px 14px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);color:#a78bfa;font-family:monospace\">"+escHtml(r.telefono)+"</div></div></div>"+
-    "<div class=\"form-group\"><label>Amigos ("+amigosArr.length+")</label><div style=\"padding:10px 14px;background:var(--input-bg);border-radius:10px;border:1px solid var(--border);line-height:2\">"+chips+"</div></div>";
+    "<div class='\"form-group\"'><label>Fecha y Hora</label><div 14px;background:var(--input-bg);border-radius:10px;border:1px="" solid="" style='\"padding:10px' var(--border);color:var(--muted)\"="">"+formatFecha(r.fecha)+"</div></div>"+
+    "<div class='\"form-row\"'><div class='\"form-group\"'><label>Nombre</label><div 14px;background:var(--input-bg);border-radius:10px;border:1px="" solid="" style='\"padding:10px' var(--border);color:#e879f9;font-weight:700\"="">"+escHtml(r.nombre)+"</div></div>"+
+    "<div class='\"form-group\"'><label>Teléfono</label><div 14px;background:var(--input-bg);border-radius:10px;border:1px="" solid="" style='\"padding:10px' var(--border);color:#a78bfa;font-family:monospace\"="">"+escHtml(r.telefono)+"</div></div></div>"+
+    "<div class='\"form-group\"'><label>Amigos ("+amigosArr.length+")</label><div 14px;background:var(--input-bg);border-radius:10px;border:1px="" solid="" style='\"padding:10px' var(--border);line-height:2\"="">"+chips+"</div></div>";
   document.getElementById("detail-overlay").classList.add("open");
 }
 
@@ -412,48 +399,7 @@ function confirmDelete() {
 function exportExcel() {
   if (typeof XLSX === "undefined") { toast("⚠️ Librería Excel no disponible","error"); return; }
   var data = [["Marca temporal","Nombre y Apellido","Nro de Teléfono de Contacto","Amigos"]];
-  for (var i=0; i<reservas.length; i++) {
-    data.push([reservas[i].fecha, reservas[i].nombre, reservas[i].telefono, reservas[i].amigos]);
-  }
-  var wb = XLSX.utils.book_new();
-  var ws = XLSX.utils.aoa_to_sheet(data);
-  ws["!cols"] = [{wch:22},{wch:28},{wch:24},{wch:60}];
-  XLSX.utils.book_append_sheet(wb, ws, "Reservas");
-  XLSX.writeFile(wb, "KaraokeDeRo_Reservas_"+new Date().toISOString().slice(0,10)+".xlsx");
-  toast("📊 Excel exportado correctamente","success");
-}
-
-function importExcel(event) {
-  var file = event.target.files[0];
-  if (!file) return;
-  toast("⏳ Leyendo archivo...","info");
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      var wb = XLSX.read(e.target.result, {type:"binary", cellDates:true});
-      var ws = wb.Sheets[wb.SheetNames[0]];
-      var allRows = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
-      if (!allRows || allRows.length < 2) { toast("⚠️ El archivo no tiene datos","error"); return; }
-      var headers = allRows[0];
-      var iF=0, iN=1, iT=2, iA=3;
-      for (var h=0; h<headers.length; h++) {
-        var hh = String(headers[h]).toLowerCase();
-        if (hh.includes("temporal")||hh.includes("fecha")) iF=h;
-        if (hh.includes("nombre")) iN=h;
-        if (hh.includes("tel")) iT=h;
-        if (hh.includes("amigo")||hh.includes("venis")) iA=h;
-      }
-      var nuevas = [];
-      for (var i=1; i<allRows.length; i++) {
-        var row = allRows[i];
-        var nombre = String(row[iN]||"").trim();
-        if (!nombre) continue;
-        var fechaRaw = row[iF];
-        var fecha = fechaRaw instanceof Date ? fechaRaw.toISOString().replace("T"," ").slice(0,19) : String(fechaRaw||"");
-        nuevas.push({id:nextId++, fecha:fecha, nombre:nombre, telefono:String(row[iT]||"").trim(), amigos:String(row[iA]||"").trim()});
-      }
-      if (nuevas.length===0) { toast("⚠️ No se encontraron reservas válidas","error"); return; }
-      if (reservas.length>0) {
+  for (var i=0; i<reservas.length; ").slice(0,19)="" "karaokedero_reservas_"+new="" "reservas");="" (!allrows="" (!file)="" (!nombre)="" (hh.includes("amigo")||hh.includes("venis"))="" (hh.includes("nombre"))="" (hh.includes("tel"))="" (hh.includes("temporal")||hh.includes("fecha"))="" (nuevas.length="0)" (reservas.length="" (var="" 2)="" :="" <="" ?="" allrows="XLSX.utils.sheet_to_json(ws," allrows.length="" amigos:string(row[ia]||"").trim()});="" archivo="" archivo...","info");="" celldates:true});="" continue;="" correctamente","success");="" data.push([reservas[i].fecha,="" date="" date().toisostring().slice(0,10)+".xlsx");="" datos","error");="" defval:""});="" el="" encontraron="" excel="" exportado="" fecha="fechaRaw" fecha:fecha,="" fecharaw="row[iF];" fecharaw.toisostring().replace("t","="" file="event.target.files[0];" filereader();="" for="" function="" h="0;" h++)="" h<headers.length;="" headers="allRows[0];" hh="String(headers[h]).toLowerCase();" i="1;" i++)="" i<allrows.length;="" ia="h;" if="" importexcel(event)="" in="h;" instanceof="" it="h;" leyendo="" no="" nombre='String(row[iN]||"").trim();' nombre:nombre,="" nuevas="[];" nuevas.push({id:nextid++,="" reader="new" reader.onload="function(e)" reservas="" reservas[i].amigos]);="" reservas[i].nombre,="" reservas[i].telefono,="" return;="" row="allRows[i];" se="" string(fecharaw||"");="" telefono:string(row[it]||"").trim(),="" tiene="" toast("⏳="" toast("⚠️="" toast("📊="" try="" var="" válidas","error");="" wb="XLSX.read(e.target.result," ws="wb.Sheets[wb.SheetNames[0]];" ws,="" ws["!cols"]="[{wch:22},{wch:28},{wch:24},{wch:60}];" xlsx.utils.book_append_sheet(wb,="" xlsx.writefile(wb,="" {="" {header:1,="" {type:"binary",="" ||="" }="">0) {
         if (confirm("¿Reemplazar las reservas actuales?\nAceptar = Reemplazar\nCancelar = Agregar")) {
           reservas = nuevas;
         } else {
@@ -485,12 +431,12 @@ function toast(msg, type) {
 
 document.addEventListener("keydown", function(e) {
   if (e.key==="Escape") { closeModal(); closeConfirm(); closeDetail(); }
-  if ((e.ctrlKey||e.metaKey) && e.key==="Enter") {
+  if ((e.ctrlKey||e.metaKey) &amp;&amp; e.key==="Enter") {
     if (document.getElementById("modal-overlay").classList.contains("open")) saveReserva();
   }
 });
 
 renderTable();
-</script>
-</body>
+
+</reservas.length;></page.length;></vb)></reservas.length;></body>
 </html>
