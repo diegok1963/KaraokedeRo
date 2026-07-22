@@ -411,12 +411,14 @@ function renderCharts() {
   var ctxDona = document.getElementById("chart-dona");
   if (ctxDona) {
     if (chartDona) chartDona.destroy();
+    var total = presentes + enEspera;
+    var pct = total > 0 ? Math.round(presentes/total*100) : 0;
     chartDona = new Chart(ctxDona, {
       type: "doughnut",
       data: {
         labels: ["Presentes", "En Espera"],
         datasets: [{
-          data: [presentes, enEspera],
+          data: [presentes || 0.001, enEspera || 0.001],
           backgroundColor: ["rgba(34,197,94,0.8)", "rgba(245,158,11,0.8)"],
           borderColor: ["#22c55e", "#f59e0b"],
           borderWidth: 2
@@ -426,10 +428,36 @@ function renderCharts() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "bottom", labels: { color: "#9ca3af", padding: 16, font: { size: 12 } } }
+          legend: { position: "bottom", labels: { color: "#9ca3af", padding: 16, font: { size: 12 } } },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var val = ctx.dataIndex === 0 ? presentes : enEspera;
+                return " " + ctx.label + ": " + val + " (" + (total > 0 ? Math.round(val/total*100) : 0) + "%)";
+              }
+            }
+          }
         },
         cutout: "65%"
-      }
+      },
+      plugins: [{
+        id: "centerText",
+        afterDraw: function(chart) {
+          var ctx2 = chart.ctx;
+          var cx = chart.chartArea.left + (chart.chartArea.right - chart.chartArea.left) / 2;
+          var cy = chart.chartArea.top + (chart.chartArea.bottom - chart.chartArea.top) / 2;
+          ctx2.save();
+          ctx2.textAlign = "center";
+          ctx2.textBaseline = "middle";
+          ctx2.fillStyle = "#e879f9";
+          ctx2.font = "bold 28px Segoe UI";
+          ctx2.fillText(pct + "%", cx, cy - 8);
+          ctx2.fillStyle = "#9ca3af";
+          ctx2.font = "12px Segoe UI";
+          ctx2.fillText("presentes", cx, cy + 14);
+          ctx2.restore();
+        }
+      }]
     });
   }
 
