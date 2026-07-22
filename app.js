@@ -39,6 +39,25 @@ var detailId = null;
 var currentPage = 1;
 var PAGE_SIZE = 10;
 
+function countUp(id, target, duration) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var start = parseInt(el.textContent) || 0;
+  if (start === target) return;
+  var range = target - start;
+  var startTime = null;
+  duration = duration || 600;
+  function step(timestamp) {
+    if (!startTime) startTime = timestamp;
+    var progress = Math.min((timestamp - startTime) / duration, 1);
+    var ease = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(start + range * ease);
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(step);
+}
+
 function updateStats() {
   var total = reservas.length;
   var hoy = new Date().toISOString().slice(0,10);
@@ -66,8 +85,8 @@ function updateStats() {
   document.getElementById("stat-total").textContent = total;
   document.getElementById("stat-amigos").textContent = totalAmigos + total;
   document.getElementById("stat-promedio").textContent = promedio;
-  document.getElementById("stat-presentes").textContent = presentes;
-  document.getElementById("stat-espera").textContent = enEspera;
+  countUp("stat-presentes", presentes);
+  countUp("stat-espera", enEspera);
   document.getElementById("badge-total").textContent = total + (total===1?" reserva":" reservas");
 }
 
