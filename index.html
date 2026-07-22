@@ -139,6 +139,7 @@ header{background:linear-gradient(135deg,#1a0030 0%,#0d0d1a 60%,#1a001a 100%);bo
 <input id="search-input" oninput="renderTable()" placeholder="Buscar por nombre, telefono o amigos..." type="text"/>
 </div>
 <button class="btn btn-excel" onclick="exportExcel()">📊 Exportar Excel</button>
+    <button class="btn btn-pdf" onclick="exportPDF()">📄 Exportar PDF</button>
 <button class="btn btn-import" onclick="document.getElementById('imp').click()">📥 Importar Excel</button>
 <input accept=".xlsx,.xls" id="imp" style="display:none" type="file"/>
 </div>
@@ -247,6 +248,6 @@ header{background:linear-gradient(135deg,#1a0030 0%,#0d0d1a 60%,#1a001a 100%);bo
 <script src="jspdf.min.js"></script>
 <script src="html2canvas.min.js"></script>
 <script src="xlsx.min.js"></script>
-<script src="app.js?v=1784723293"></script>
+<script src="app.js?v=1784723675"></script>
 </body>
 </html>
