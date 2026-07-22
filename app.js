@@ -152,6 +152,7 @@ function renderTable() {
       html += '</div>';
       html += '<div class="card-footer">';
       html += '<button class="btn btn-outline btn-sm" onclick="openDetail(' + r.id + ')">&#128065; Ver</button>';
+      html += '<button class="btn btn-wa btn-sm" onclick="enviarWhatsApp(' + r.id + ')">&#128172; WhatsApp</button>';
       html += '<button class="btn btn-success btn-sm" onclick="openModal(' + r.id + ')">&#9999;&#65039; Editar</button>';
       html += '<button class="btn btn-danger btn-sm" onclick="openConfirm(' + r.id + ')">&#128465; Eliminar</button>';
       html += '</div></div>';
@@ -299,6 +300,30 @@ function exportExcel() {
   XLSX.utils.book_append_sheet(wb, ws, "Reservas");
   XLSX.writeFile(wb, "KaraokeDeRo_Reservas_" + new Date().toISOString().slice(0,10) + ".xlsx");
   toast("Excel exportado", "success");
+}
+
+function enviarWhatsApp(id) {
+  var r = null;
+  for (var i=0; i<reservas.length; i++) { if (reservas[i].id===id) { r=reservas[i]; break; } }
+  if (!r) return;
+  var tel = r.telefono.replace(/[^0-9]/g, "");
+  if (!tel) { toast("No hay numero de telefono registrado", "error"); return; }
+  if (tel.length <= 10) tel = "549" + tel;
+  var amigosArr = r.amigos ? r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean) : [];
+  var fechaFmt = formatFecha(r.fecha);
+  var nl = "\n";
+  var partes = [
+    "Hola " + r.nombre + "!",
+    "Tu reserva en *KaraokeDeRo* esta confirmada!",
+    "",
+    "Fecha: " + fechaFmt
+  ];
+  if (amigosArr.length > 0) partes.push("Grupo: " + amigosArr.join(", "));
+  partes.push("");
+  partes.push("Te esperamos!");
+  var msg = partes.join(nl);
+  var url = "https://wa.me/" + tel + "?text=" + encodeURIComponent(msg);
+  window.open(url, "_blank");
 }
 
 function importExcel(event) {
