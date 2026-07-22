@@ -174,6 +174,7 @@ function renderTable() {
   for (var p=1; p<=totalPages; p++) addBtn(p, p, false, p===currentPage);
   addBtn(">", currentPage+1, currentPage===totalPages, false);
   updateStats();
+  renderCharts();
 }
 
 function openModal(id) {
@@ -350,3 +351,137 @@ document.addEventListener("keydown", function(e) {
 });
 
 renderTable();
+
+// ── GRÁFICOS ──────────────────────────────────────────────────────────────────
+var chartDona = null;
+var chartDias = null;
+var chartHoras = null;
+
+function renderCharts() {
+  if (typeof Chart === "undefined") return;
+
+  // Datos para dona
+  var presentes = 0, enEspera = 0;
+  for (var i=0; i<reservas.length; i++) {
+    var r = reservas[i];
+    var personas = [r.nombre];
+    if (r.amigos && r.amigos.trim()) {
+      r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean).forEach(function(a){ personas.push(a); });
+    }
+    for (var k=0; k<personas.length; k++) {
+      var key = "p" + k;
+      if (r.estados && r.estados[key] === "presente") presentes++;
+      else enEspera++;
+    }
+  }
+
+  // Datos por día
+  var diasMap = {};
+  for (var i=0; i<reservas.length; i++) {
+    var fecha = reservas[i].fecha ? reservas[i].fecha.slice(0,10) : "Sin fecha";
+    diasMap[fecha] = (diasMap[fecha] || 0) + 1;
+  }
+  var diasKeys = Object.keys(diasMap).sort();
+  var diasVals = diasKeys.map(function(k){ return diasMap[k]; });
+  var diasLabels = diasKeys.map(function(k){
+    if (k === "Sin fecha") return k;
+    var d = new Date(k + "T00:00:00");
+    return d.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit"});
+  });
+
+  // Datos por hora
+  var horasMap = {};
+  for (var i=0; i<reservas.length; i++) {
+    var f = reservas[i].fecha || "";
+    var hora = f.length >= 13 ? f.slice(11,13) + ":00" : "Sin hora";
+    horasMap[hora] = (horasMap[hora] || 0) + 1;
+  }
+  var horasKeys = Object.keys(horasMap).sort();
+  var horasVals = horasKeys.map(function(k){ return horasMap[k]; });
+
+  var chartDefaults = {
+    plugins: { legend: { labels: { color: "#9ca3af", font: { size: 12 } } } },
+    scales: {
+      x: { ticks: { color: "#9ca3af" }, grid: { color: "rgba(255,255,255,0.05)" } },
+      y: { ticks: { color: "#9ca3af", stepSize: 1 }, grid: { color: "rgba(255,255,255,0.05)" }, beginAtZero: true }
+    }
+  };
+
+  // Dona
+  var ctxDona = document.getElementById("chart-dona");
+  if (ctxDona) {
+    if (chartDona) chartDona.destroy();
+    chartDona = new Chart(ctxDona, {
+      type: "doughnut",
+      data: {
+        labels: ["Presentes", "En Espera"],
+        datasets: [{
+          data: [presentes, enEspera],
+          backgroundColor: ["rgba(34,197,94,0.8)", "rgba(245,158,11,0.8)"],
+          borderColor: ["#22c55e", "#f59e0b"],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "bottom", labels: { color: "#9ca3af", padding: 16, font: { size: 12 } } }
+        },
+        cutout: "65%"
+      }
+    });
+  }
+
+  // Barras por día
+  var ctxDias = document.getElementById("chart-dias");
+  if (ctxDias) {
+    if (chartDias) chartDias.destroy();
+    chartDias = new Chart(ctxDias, {
+      type: "bar",
+      data: {
+        labels: diasLabels,
+        datasets: [{
+          label: "Reservas",
+          data: diasVals,
+          backgroundColor: "rgba(192,38,211,0.7)",
+          borderColor: "#c026d3",
+          borderWidth: 2,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: chartDefaults.scales
+      }
+    });
+  }
+
+  // Barras por hora
+  var ctxHoras = document.getElementById("chart-horas");
+  if (ctxHoras) {
+    if (chartHoras) chartHoras.destroy();
+    chartHoras = new Chart(ctxHoras, {
+      type: "bar",
+      data: {
+        labels: horasKeys,
+        datasets: [{
+          label: "Reservas",
+          data: horasVals,
+          backgroundColor: "rgba(34,197,94,0.7)",
+          borderColor: "#22c55e",
+          borderWidth: 2,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: chartDefaults.scales
+      }
+    });
+  }
+}

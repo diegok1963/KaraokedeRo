@@ -100,6 +100,16 @@ header{background:linear-gradient(135deg,#1a0030 0%,#0d0d1a 60%,#1a001a 100%);bo
 .page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .page-btn:disabled{opacity:.3;cursor:not-allowed}
 @media(max-width:700px){header{padding:14px 16px}.header-text h1{font-size:1.2rem}.form-row{grid-template-columns:1fr}}
+.reportes-section{margin-top:32px}
+.reportes-title{font-size:1rem;font-weight:700;color:#e879f9;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:28px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;position:relative}
+.chart-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.chart-card.c1::before{background:linear-gradient(90deg,#c026d3,#7c3aed)}
+.chart-card.c2::before{background:linear-gradient(90deg,#f59e0b,#ef4444)}
+.chart-card.c3::before{background:linear-gradient(90deg,#22c55e,#06b6d4)}
+.chart-title{font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.chart-wrap{position:relative;height:220px}
 </style>
 </head>
 <body>
@@ -190,7 +200,25 @@ header{background:linear-gradient(135deg,#1a0030 0%,#0d0d1a 60%,#1a001a 100%);bo
 </div>
 </div>
 </div>
-<div id="toast-container"></div>
+<div id="toast-container">  <div class="reportes-section">
+    <div class="reportes-title">&#128202; Estadísticas y Reportes</div>
+    <div class="charts-grid">
+      <div class="chart-card c1">
+        <div class="chart-title">Presentes vs En Espera</div>
+        <div class="chart-wrap"><canvas id="chart-dona"></canvas></div>
+      </div>
+      <div class="chart-card c2">
+        <div class="chart-title">Reservas por Día</div>
+        <div class="chart-wrap"><canvas id="chart-dias"></canvas></div>
+      </div>
+      <div class="chart-card c3">
+        <div class="chart-title">Reservas por Hora</div>
+        <div class="chart-wrap"><canvas id="chart-horas"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="xlsx.min.js"></script>
 <script src="app.js"></script>
 </body>
