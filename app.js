@@ -515,3 +515,176 @@ function renderCharts() {
     }
   }
 }
+
+// ── EXPORT PDF ────────────────────────────────────────────────────────────────
+function exportPDF() {
+  if (typeof jspdf === "undefined" && typeof window.jspdf === "undefined") {
+    toast("Libreria PDF no disponible", "error");
+    return;
+  }
+  toast("Generando PDF...", "info");
+
+  var doc = new window.jspdf.jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  var pageW = 210;
+  var margin = 14;
+  var y = 0;
+
+  // ── ENCABEZADO ──
+  doc.setFillColor(13, 13, 26);
+  doc.rect(0, 0, pageW, 28, "F");
+  doc.setTextColor(232, 121, 249);
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("KaraokeDeRo", margin, 12);
+  doc.setTextColor(156, 163, 175);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text("Reporte de Reservas", margin, 19);
+  var fecha = new Date().toLocaleDateString("es-AR", {day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  doc.text("Generado: " + fecha, pageW - margin, 19, { align: "right" });
+  y = 36;
+
+  // ── RESUMEN GENERAL ──
+  doc.setTextColor(232, 121, 249);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text("Resumen General", margin, y);
+  y += 6;
+
+  var presentes = 0, enEspera = 0, totalPersonas = 0;
+  for (var i=0; i<reservas.length; i++) {
+    var r = reservas[i];
+    var amigosArr = r.amigos ? r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean) : [];
+    var personas = amigosArr.length + 1;
+    totalPersonas += personas;
+    for (var k=0; k<personas; k++) {
+      if (r.estados && r.estados["p"+k] === "presente") presentes++;
+      else enEspera++;
+    }
+  }
+  var pct = totalPersonas > 0 ? Math.round(presentes/totalPersonas*100) : 0;
+  var promedio = reservas.length > 0 ? (totalPersonas/reservas.length).toFixed(1) : 0;
+
+  var stats = [
+    ["Total Reservas", reservas.length],
+    ["Total Asistentes", totalPersonas],
+    ["Promedio por Grupo", promedio],
+    ["Presentes", presentes + " (" + pct + "%)"],
+    ["En Espera", enEspera + " (" + (100-pct) + "%)"]
+  ];
+
+  doc.setFontSize(9);
+  var colW = (pageW - margin*2) / stats.length;
+  stats.forEach(function(s, idx) {
+    var x = margin + idx * colW;
+    doc.setFillColor(22, 22, 42);
+    doc.roundedRect(x, y, colW - 2, 16, 2, 2, "F");
+    doc.setTextColor(232, 121, 249);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text(String(s[1]), x + (colW-2)/2, y + 7, { align: "center" });
+    doc.setTextColor(156, 163, 175);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.text(s[0], x + (colW-2)/2, y + 13, { align: "center" });
+  });
+  y += 24;
+
+  // ── GRÁFICOS ──
+  doc.setTextColor(232, 121, 249);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text("Estadisticas y Graficos", margin, y);
+  y += 4;
+
+  var chartIds = ["chart-dona", "chart-dias", "chart-horas"];
+  var chartTitles = ["Presentes vs En Espera", "Reservas por Dia", "Reservas por Hora"];
+  var chartW = (pageW - margin*2 - 8) / 3;
+
+  var captureChart = function(idx) {
+    if (idx >= chartIds.length) {
+      finalizarPDF();
+      return;
+    }
+    var canvas = document.getElementById(chartIds[idx]);
+    if (!canvas) { captureChart(idx+1); return; }
+    html2canvas(canvas, { backgroundColor: "#16162a", scale: 2 }).then(function(c) {
+      var imgData = c.toDataURL("image/png");
+      var x = margin + idx * (chartW + 4);
+      doc.setFillColor(22, 22, 42);
+      doc.roundedRect(x, y, chartW, chartW * 0.75 + 8, 2, 2, "F");
+      doc.setTextColor(156, 163, 175);
+      doc.setFontSize(7);
+      doc.text(chartTitles[idx], x + chartW/2, y + 5, { align: "center" });
+      doc.addImage(imgData, "PNG", x + 1, y + 7, chartW - 2, chartW * 0.75 - 2);
+      captureChart(idx+1);
+    });
+  };
+
+  var finalizarPDF = function() {
+    y += chartW * 0.75 + 14;
+
+    // ── TABLA DE RESERVAS ──
+    doc.setTextColor(232, 121, 249);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Detalle de Reservas", margin, y);
+    y += 6;
+
+    // Encabezado tabla
+    var cols = ["#", "Nombre", "Telefono", "Fecha", "Grupo", "Estado"];
+    var colWidths = [8, 40, 30, 30, 50, 20];
+    doc.setFillColor(26, 0, 48);
+    doc.rect(margin, y, pageW - margin*2, 7, "F");
+    doc.setTextColor(232, 121, 249);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    var cx = margin;
+    cols.forEach(function(col, i) {
+      doc.text(col, cx + 2, y + 5);
+      cx += colWidths[i];
+    });
+    y += 7;
+
+    // Filas
+    reservas.forEach(function(r, idx) {
+      if (y > 270) { doc.addPage(); y = 14; }
+      var amigosArr = r.amigos ? r.amigos.split(",").map(function(a){return a.trim();}).filter(Boolean) : [];
+      var totalP = amigosArr.length + 1;
+      var pres = 0;
+      for (var k=0; k<totalP; k++) { if (r.estados && r.estados["p"+k]==="presente") pres++; }
+      var estado = pres + "/" + totalP + " pres.";
+
+      doc.setFillColor(idx%2===0 ? 22 : 30, idx%2===0 ? 22 : 30, idx%2===0 ? 42 : 56);
+      doc.rect(margin, y, pageW - margin*2, 6, "F");
+      doc.setTextColor(241, 240, 255);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+
+      var vals = [
+        String(idx+1),
+        r.nombre.slice(0,22),
+        r.telefono.slice(0,18),
+        (r.fecha||"").slice(0,16),
+        (r.amigos||"Sin amigos").slice(0,28),
+        estado
+      ];
+      cx = margin;
+      vals.forEach(function(v, i) {
+        doc.text(v, cx + 2, y + 4.5);
+        cx += colWidths[i];
+      });
+      y += 6;
+    });
+
+    // ── PIE DE PÁGINA ──
+    doc.setTextColor(156, 163, 175);
+    doc.setFontSize(7);
+    doc.text("KaraokeDeRo - Reporte generado el " + fecha, pageW/2, 290, { align: "center" });
+
+    doc.save("KaraokeDeRo_Reporte_" + new Date().toISOString().slice(0,10) + ".pdf");
+    toast("PDF generado correctamente", "success");
+  };
+
+  captureChart(0);
+}
