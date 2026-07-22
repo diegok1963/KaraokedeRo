@@ -42,11 +42,12 @@ var PAGE_SIZE = 10;
 function countUp(id, target, duration) {
   var el = document.getElementById(id);
   if (!el) return;
-  var start = parseInt(el.textContent) || 0;
-  if (start === target) return;
+  var start = 0;
   var range = target - start;
   var startTime = null;
-  duration = duration || 600;
+  duration = duration || 800;
+  el.textContent = 0;
+  if (target === 0) return;
   function step(timestamp) {
     if (!startTime) startTime = timestamp;
     var progress = Math.min((timestamp - startTime) / duration, 1);
