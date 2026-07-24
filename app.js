@@ -297,12 +297,19 @@ function enviarWhatsApp(id) {
   if (tel.length <= 10) tel = "549" + tel;
   var amigosArr = r.amigos ? r.amigos.split(",").map(function(a){ return a.trim(); }).filter(Boolean) : [];
   var nl = "\n";
+  var eventoFecha = document.getElementById("evento-fecha").value;
+  var eventoHora = document.getElementById("evento-hora").value;
+  var eventoStr = "";
+  if (eventoFecha) {
+    var d = new Date(eventoFecha + "T00:00:00");
+    eventoStr = d.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric"});
+  }
+  if (eventoHora) eventoStr += (eventoStr ? " a las " : "") + eventoHora + "hs";
   var partes = [
     "Hola " + r.nombre + "!",
-    "Tu reserva en *KaraokeDeRo* esta confirmada!",
-    "",
-    "Fecha: " + formatFecha(r.fecha)
+    "Tu reserva en *KaraokeDeRo* esta confirmada!"
   ];
+  if (eventoStr) partes.push("", "Fecha del evento: " + eventoStr);
   if (amigosArr.length > 0) partes.push("Grupo: " + amigosArr.join(", "));
   partes.push("", "Te esperamos!");
   var url = "https://wa.me/" + tel + "?text=" + encodeURIComponent(partes.join(nl));
