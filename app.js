@@ -102,7 +102,8 @@ function getFiltered() {
   return reservas.filter(function(r) {
     return r.nombre.toLowerCase().indexOf(q) >= 0 ||
            r.telefono.toLowerCase().indexOf(q) >= 0 ||
-           (r.amigos||"").toLowerCase().indexOf(q) >= 0;
+           (r.amigos||"").toLowerCase().indexOf(q) >= 0 ||
+           (r.mesa||"").toLowerCase().indexOf(q) >= 0;
   });
 }
 
