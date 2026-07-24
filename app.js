@@ -572,5 +572,27 @@ document.addEventListener("keydown", function(e) {
   if (e.key === "Escape") { closeModal(); closeConfirm(); closeDetail(); }
 });
 
+// ── EVENTO FECHA/HORA ────────────────────────────────────────────────────────
+function cargarEvento() {
+  try {
+    var ev = localStorage.getItem("karaoke_evento");
+    if (ev) {
+      var obj = JSON.parse(ev);
+      if (obj.fecha) document.getElementById("evento-fecha").value = obj.fecha;
+      if (obj.hora) document.getElementById("evento-hora").value = obj.hora;
+    }
+  } catch(e) {}
+}
+
+function guardarEvento() {
+  var fecha = document.getElementById("evento-fecha").value;
+  var hora = document.getElementById("evento-hora").value;
+  try { localStorage.setItem("karaoke_evento", JSON.stringify({fecha:fecha, hora:hora})); } catch(e) {}
+}
+
+document.getElementById("evento-fecha").addEventListener("change", guardarEvento);
+document.getElementById("evento-hora").addEventListener("change", guardarEvento);
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
+cargarEvento();
 renderTable();

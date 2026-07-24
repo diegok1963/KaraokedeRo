@@ -30,6 +30,14 @@ header { background: linear-gradient(135deg,#1a0030 0%,#0d0d1a 60%,#1a001a 100%)
 .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 .badge-total { background: linear-gradient(135deg,var(--accent),var(--accent2)); color: #fff; font-size: .75rem; font-weight: 700; padding: 4px 14px; border-radius: 20px; }
 
+/* HEADER FIELDS */
+.header-fields { display: flex; align-items: center; gap: 10px; margin-left: 24px; }
+.header-field { display: flex; flex-direction: column; gap: 3px; }
+.header-field label { font-size: .62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.header-field input { background: rgba(255,255,255,.07); border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; color: var(--text); font-size: .82rem; outline: none; transition: border-color .2s; width: 130px; }
+.header-field input[type="time"] { width: 100px; }
+.header-field input:focus { border-color: var(--accent); }
+
 /* CONTAINER */
 .container { max-width: 1300px; margin: 0 auto; padding: 28px 20px; }
 
@@ -156,6 +164,16 @@ header { background: linear-gradient(135deg,#1a0030 0%,#0d0d1a 60%,#1a001a 100%)
 <header>
   <div class="logo-icon">&#127908;</div>
   <div class="header-text"><h1>KaraokeDeRo</h1><p>Administrador de Reservas</p></div>
+  <div class="header-fields">
+    <div class="header-field">
+      <label>Fecha del Evento</label>
+      <input type="date" id="evento-fecha"/>
+    </div>
+    <div class="header-field">
+      <label>Hora del Evento</label>
+      <input type="time" id="evento-hora"/>
+    </div>
+  </div>
   <div class="header-right">
     <span class="badge-total" id="badge-total">0 reservas</span>
     <button class="btn btn-primary" onclick="openModal()">&#43; Nueva Reserva</button>
