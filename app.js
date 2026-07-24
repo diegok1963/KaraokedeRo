@@ -151,9 +151,17 @@ function renderTable() {
 
       html += '<div class="reserva-card">';
       html += '<div class="card-top">';
-      html += '<div><div class="card-nombre">' + titularBtn + ' Reserva de ' + esc(r.nombre) + '</div>';
-      html += '<div class="card-fecha">&#128197; ' + formatFecha(r.fecha) + '</div></div>';
-      html += '<span class="card-num">#' + num + '</span></div>';
+      html += '<div style="width:100%">';
+      html += '<div class="card-fecha" style="margin-bottom:5px">&#128197; ' + formatFecha(r.fecha) + '</div>';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">';
+      html += '<div class="card-nombre">' + titularBtn + ' Reserva de ' + esc(r.nombre) + '</div>';
+      html += '<div style="display:flex;align-items:center;gap:5px;flex-shrink:0">';
+      html += '<span style="font-size:.65rem;color:var(--muted);white-space:nowrap">Mesa</span>';
+      html += '<input type="text" value="' + esc(r.mesa||'') + '" placeholder="#" ';
+      html += 'onchange="updateMesa(' + r.id + ',this.value)" ';
+      html += 'style="width:48px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:.8rem;text-align:center;outline:none"/>';
+      html += '</div></div></div>';
+      html += '<span class="card-num" style="flex-shrink:0">#' + num + '</span></div>';
       html += '<div class="card-body">';
       html += '<div class="card-field"><span class="card-field-icon">&#128222;</span>';
       html += '<div><div class="card-field-label">Teléfono</div><div class="card-field-value">' + esc(r.telefono) + '</div></div></div>';
@@ -228,13 +236,19 @@ function saveReserva() {
     if (idx !== -1) { reservas[idx].nombre = nombre; reservas[idx].telefono = telefono; reservas[idx].amigos = amigos; }
     toast("Reserva actualizada", "success");
   } else {
-    reservas.push({ id: nextId++, fecha: nowISO(), nombre: nombre, telefono: telefono, amigos: amigos, estados: {} });
+    reservas.push({ id: nextId++, fecha: nowISO(), nombre: nombre, telefono: telefono, amigos: amigos, estados: {}, mesa: '' });
     toast("Nueva reserva agregada", "success");
   }
   closeModal();
   guardarReservas();
   renderTable();
   exportExcel();
+}
+
+// ── ACTUALIZAR MESA ──────────────────────────────────────────────────────────
+function updateMesa(id, valor) {
+  var r = reservas.find(function(x){ return x.id === id; });
+  if (r) { r.mesa = valor.trim(); guardarReservas(); }
 }
 
 // ── TOGGLE ESTADO PERSONA ─────────────────────────────────────────────────────
